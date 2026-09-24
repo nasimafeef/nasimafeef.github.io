@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modding · Driving Simulator Kerala</title>
+<meta name="description" content="Add your own cars to Driving Simulator Kerala: install vehicle packs, make your own with the mod kit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper:      #f6f7f4;
+    --surface:    #ffffff;
+    --ink:        #14201b;
+    --slate:      #5c6b64;
+    --sign:       #0b5340;
+    --sign-soft:  #e3ece8;
+    --rule:       #d7ded9;
+    --amber:      #8a5a00;
+    --amber-soft: #fbf1dc;
+
+    --font-display: "Barlow Condensed", "Arial Narrow", Helvetica, sans-serif;
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101614;
+      --surface:    #171f1c;
+      --ink:        #e6ece9;
+      --slate:      #9aa9a2;
+      --sign:       #6fbfa1;
+      --sign-soft:  #1b2a25;
+      --rule:       #2a3630;
+      --amber:      #e5b45c;
+      --amber-soft: #2a2415;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #101614;
+    --surface:    #171f1c;
+    --ink:        #e6ece9;
+    --slate:      #9aa9a2;
+    --sign:       #6fbfa1;
+    --sign-soft:  #1b2a25;
+    --rule:       #2a3630;
+    --amber:      #e5b45c;
+    --amber-soft: #2a2415;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    padding-inline: 16px;
+    padding-block: 0 72px;
+  }
+  .wrap { max-width: 720px; margin-inline: auto; }
+
+  header.mast {
+    border-bottom: 3px solid var(--sign);
+    padding-block: 40px 20px;
+    margin-bottom: 28px;
+  }
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--sign);
+    margin: 0 0 6px;
+  }
+  .eyebrow a { color: inherit; text-decoration: none; }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(34px, 7vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede { font-size: 18px; color: var(--slate); margin: 0; }
+
+  nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 32px; }
+  nav.jump a {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--sign);
+    border: 1.5px solid var(--sign);
+    border-radius: 999px;
+    padding: 5px 14px;
+  }
+  nav.jump a:hover { background: var(--sign-soft); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 48px 0 4px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 16px;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: .02em;
+    margin: 28px 0 4px;
+  }
+  p { margin: 12px 0; }
+  a { color: var(--sign); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--sign); outline-offset: 3px; border-radius: 2px; }
+  ul, ol { margin: 12px 0; padding-left: 22px; }
+  li { margin: 7px 0; }
+  strong { font-weight: 600; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .86em;
+    background: var(--sign-soft);
+    padding: 1px 5px;
+    border-radius: 3px;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; overflow-wrap: normal; }
+
+  .glance {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--sign);
+    padding: 18px 20px;
+  }
+  .glance p:first-child { margin-top: 0; }
+  .glance ul { margin-bottom: 0; }
+
+  .note {
+    background: var(--amber-soft);
+    border-left: 4px solid var(--amber);
+    padding: 12px 16px;
+    margin: 16px 0;
+  }
+  .note strong { color: var(--amber); }
+
+  .soon {
+    background: var(--surface);
+    border: 1.5px dashed var(--sign);
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--paper);
+    background: var(--sign);
+    border-radius: 3px;
+    padding: 2px 8px;
+    margin-bottom: 6px;
+  }
+
+  ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 44px;
+    margin: 18px 0;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--sign);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    display: grid;
+    place-items: center;
+  }
+
+  footer {
+    margin-top: 52px;
+    padding-top: 20px;
+    border-top: 3px solid var(--sign);
+    font-size: 14.5px;
+    color: var(--slate);
+  }
+  footer p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow"><a href="https://nasimafeef.github.io/driving-simulator-kerala/">Driving Simulator Kerala</a></p>
+  <h1>Modding</h1>
+  <p class="lede">Add new cars to drive and new cars for the traffic, with vehicle packs.</p>
+</header>
+
+<nav class="jump" aria-label="On this page">
+  <a href="#install">Install a pack</a>
+  <a href="#make">Make your own</a>
+  <a href="#mod-kit">Get the Mod Kit</a>
+  <a href="#rules">Rules</a>
+</nav>
+
+<div class="glance">
+  <p><strong>A vehicle pack</strong> is a small add-on folder you copy onto your phone. The game loads it when it
+  starts; nothing in the installed game changes, and you can remove it any time.</p>
+  <ul>
+    <li><strong>Drivable cars</strong> appear in the garage after the built-in ones.</li>
+    <li><strong>Traffic cars</strong> are mixed into the traffic on the roads.</li>
+    <li>Packs are made on a Windows PC with the free <strong>Unreal Engine 5.8</strong> and our Mod Kit.</li>
+  </ul>
+</div>
+
+<h2 id="install">Install a vehicle pack</h2>
+<ol class="steps">
+  <li>Get the pack's folder (for example <code>RaviCars</code>) from its author. It contains a
+  <code>.uplugin</code> file and a <code>Content</code> folder.</li>
+  <li>Connect your phone to a computer, or use a file manager app, and copy the <strong>whole folder</strong> to:
+    <pre><code>Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></pre>
+    Create the <code>Plugins/GameFeatures</code> folders if they don't exist yet.</li>
+  <li><strong>Restart the game.</strong></li>
+  <li>On the main menu tap <strong>Mods</strong>. The pack should say <strong>Loaded</strong> and list its cars.
+  If it says <em>Could not load</em>, the reason is shown underneath.</li>
+</ol>
+<p>To remove a pack, delete its folder and restart the game.</p>
+<div class="note">
+  <p><strong>Packs are made for one version of the game.</strong> After a game update, a pack only loads once
+  its author rebuilds it for the new version. In multiplayer, everyone needs the same packs: the host refuses
+  cars it doesn't have.</p>
+</div>
+
+<h2 id="make">Make your own</h2>
+<p>This is the outline. The Mod Kit contains the full step-by-step guide, with every setting explained.</p>
+
+<h3>What you need</h3>
+<ul>
+  <li>A <strong>Windows PC</strong> and <strong>Unreal Engine 5.8</strong> (free, from the Epic Games Launcher,
+  with the <em>Android</em> target platform ticked).</li>
+  <li>The <a href="#mod-kit">Mod Kit</a> for the current version of the game.</li>
+  <li>A <strong>3D car model you have the rights to</strong>. The kit contains no car models; Unreal's own
+  sports car template is fine for learning.</li>
+  <li>For testing: an Android phone with USB debugging.</li>
+</ul>
+
+<h3>The steps</h3>
+<ol class="steps">
+  <li><strong>Create your pack.</strong> One script creates it: pick a short one-word name. It becomes the start
+  of every vehicle id in the pack, like <code>ravicars.swift</code>.</li>
+  <li><strong>Add a drivable car.</strong> Import a skeletal mesh with one bone per wheel, make a small wheel
+  animation Blueprint, and a vehicle Blueprint based on the kit's <code>BP_VehiclePawnBase</code>. Driving,
+  fuel, cameras, sounds and multiplayer all come from it. Then a <em>vehicle definition</em> puts the car in the
+  garage.</li>
+  <li><strong>Add a traffic car.</strong> Only a model is needed, and a static mesh is fine. A <em>traffic
+  definition</em> sets how common it is and how fast it drives.</li>
+  <li><strong>Check it.</strong> Right-click your pack → <em>Validate Assets</em>. The kit flags anything that
+  won't work on phones or won't build.</li>
+  <li><strong>Build and install.</strong> One script builds the installable folder, and can copy it straight to a
+  connected phone.</li>
+</ol>
+
+<h3>Tips</h3>
+<ul>
+  <li>Keep cars light: drivable cars under <strong>30,000 vertices</strong>, traffic cars under
+  <strong>10,000</strong>, with LODs, textures at most <strong>2048&nbsp;px</strong>, and
+  <strong>Nanite off</strong>. Phones don't support Nanite.</li>
+  <li>Engine torque curve: keep its keys <strong>linear</strong>. A curved key with a steep tangent can dip below
+  zero between keys, and the car then drives backwards when pulling away.</li>
+  <li>Traffic car driving backwards? Set its <em>Mesh Yaw Offset</em> to <code>180</code>.</li>
+  <li>Car floating, sinking or flipping? The wheel bone names don't match the skeleton, the wheel radius is
+  wrong, or the model's pivot isn't at ground level.</li>
+</ul>
+
+<h2 id="mod-kit">Get the Mod Kit</h2>
+<div class="soon">
+  <span class="badge">Coming soon</span>
+  <p>The Mod Kit isn't available to download yet. It will be published here, made for the current version of
+  the game. Check back after the next update.</p>
+</div>
+<p>What you'll get:</p>
+<ul>
+  <li>A cut-down copy of the game's Unreal project with what a vehicle needs to plug into the game, and no
+  more.</li>
+  <li>Scripts to create, check, build and install packs.</li>
+  <li>The full modding guide, from importing a model to troubleshooting.</li>
+</ul>
+
+<h2 id="rules">Rules</h2>
+<ol>
+  <li><strong>Only content you have the rights to.</strong> No models or textures taken from other games.</li>
+  <li><strong>Everything in the pack.</strong> A pack may use its own files and what the game ships; nothing
+  else.</li>
+  <li><strong>No scripts.</strong> Blueprints may add components and change values, but not add logic. Phones
+  can't load code from a pack.</li>
+  <li><strong>Ids start with your pack name</strong>, lowercase: <code>&lt;pack&gt;.&lt;vehicle&gt;</code>. Never
+  change an id once people use the pack; saves refer to it.</li>
+</ol>
+
+<footer>
+  <p>Driving Simulator Kerala · Eva Studios</p>
+  <p><a href="https://nasimafeef.github.io/driving-simulator-kerala/">Game page and privacy policy</a></p>
+</footer>
+
+</div>
+</body>
+</html>

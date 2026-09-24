@@ -168,6 +168,20 @@
     padding: 18px 20px;
     margin: 16px 0;
   }
+  a.download {
+    display: inline-block;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--paper);
+    background: var(--sign);
+    border-radius: 4px;
+    padding: 10px 20px;
+  }
+  a.download:hover { filter: brightness(1.1); }
   .badge {
     display: inline-block;
     font-family: var(--font-display);
@@ -301,17 +315,23 @@
 
 <h2 id="mod-kit">Get the Mod Kit</h2>
 <div class="soon">
-  <span class="badge">Coming soon</span>
-  <p>The Mod Kit isn't available to download yet. It will be published here, made for the current version of
-  the game. Check back after the next update.</p>
+  <p><a class="download" href="https://drive.google.com/drive/folders/1C3zJoOmAt6Gqrc3gB1j_G70-Rg38xitL?usp=drive_link">Download the Mod Kit</a></p>
+  <p>A small zip (about 1&nbsp;MB) on Google Drive. Unzip it on your PC, keep the folder name
+  <code>VehicleSimulator</code>, and start with the <code>README.md</code> inside.</p>
 </div>
-<p>What you'll get:</p>
+<p>What you get:</p>
 <ul>
   <li>A cut-down copy of the game's Unreal project with what a vehicle needs to plug into the game, and no
-  more.</li>
+  more. It contains no car models and no sounds: bring your own model; in the game your car uses the game's
+  engine and crash sounds.</li>
   <li>Scripts to create, check, build and install packs.</li>
   <li>The full modding guide, from importing a model to troubleshooting.</li>
 </ul>
+<div class="note">
+  <p><strong>Packs need a version of the game with the Mods button</strong> on the main menu. Each kit is
+  made for one version of the game (see <code>MODKIT_RELEASE.txt</code> in the kit); when the game updates,
+  download the new kit and rebuild your pack.</p>
+</div>
 
 <h2 id="rules">Rules</h2>
 <ol>

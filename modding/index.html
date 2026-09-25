@@ -684,6 +684,7 @@ Try the axis and sign (e.g. -70) until the part moves the right way; it depends 
     <tr><td>Unreal says the kit's modules are missing or built for another engine</td><td>Install exactly Unreal Engine 5.8.</td></tr>
     <tr><td>The pack isn't active in Unreal / its cars don't show</td><td>Restart Unreal after creating the GameFeatureData (step 5). Check its name matches the pack exactly.</td></tr>
     <tr><td>Build error: <code>Uncooked … content … is being referenced by DLC!</code></td><td>Your pack uses something outside the pack. <em>Validate Assets</em> lists it; move it into the pack.</td></tr>
+    <tr><td>Build fails with <code>Could not find a part of the path …</code></td><td>The kit's folder path is too long for Windows (over 260 characters inside it). Move the whole <code>VehicleSimulator</code> folder to a short one such as <code>C:\Mods\VehicleSimulator</code> and build again.</td></tr>
     <tr><td>Hundreds of <code>Could not resolve package</code> warnings, or warnings about missing <code>/Game/Sounds</code></td><td>Normal. Only errors matter.</td></tr>
     <tr><td>Mods says <em>Could not load</em></td><td>Read the reason under it. Usually the pack was built with a kit for another game version, or copied to the wrong folder (the <code>.uplugin</code> must be directly inside <code>GameFeatures/RaviCars/</code>).</td></tr>
     <tr><td>Car not in the garage</td><td>The definition isn't in <code>/RaviCars/Vehicles</code>, <em>Pawn Class</em> is empty, or the GameFeatureData is missing the <code>EvaVehicle</code> entry.</td></tr>

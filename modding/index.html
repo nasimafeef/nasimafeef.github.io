@@ -298,9 +298,10 @@
 </div>
 
 <h2 id="make">Make your own</h2>
-<p>This walks you through making a pack from nothing to driving your own car on your phone. The example uses
-Unreal's free template sports car, so you can follow every step exactly; <a href="#own-model">step 12</a> covers
-using your own model. It takes about an hour the first time, most of it waiting for downloads.</p>
+<p>This walks you through making a pack from nothing to driving <strong>your own car model</strong> on your phone:
+one you made (for example in Blender) or one whose licence lets you share it. The examples use a pack called
+<code>RaviCars</code> and a car called <code>RaviCar</code>; use your own names. It takes about an hour the first
+time, most of it waiting for downloads.</p>
 
 <nav class="toc" aria-label="Steps">
   <ol>
@@ -309,13 +310,13 @@ using your own model. It takes about an hour the first time, most of it waiting 
     <li><a href="#kit">Unzip the Mod Kit</a></li>
     <li><a href="#pack">Create your pack</a></li>
     <li><a href="#gfd">Set up the pack in Unreal</a></li>
-    <li><a href="#model">Get a car model</a></li>
+    <li><a href="#model">Prepare and import your model</a></li>
     <li><a href="#drivable">Make the car drivable</a></li>
     <li><a href="#garage">Put it in the garage</a></li>
     <li><a href="#traffic">Add it to traffic</a></li>
     <li><a href="#test">Test it in Unreal</a></li>
     <li><a href="#build">Check, build and install</a></li>
-    <li><a href="#own-model">Using your own model</a></li>
+
     <li><a href="#anim-bp">Animation, buttons and custom animations</a></li>
     <li><a href="#trouble">Troubleshooting</a></li>
   </ol>
@@ -395,67 +396,79 @@ in Unreal, and use the game's engine, skid and crash sounds on your phone.</p>
 Blueprints all live under <code>RaviCars</code>. Anything your pack uses from outside it (other than the game parts
 the kit provides) makes the build fail.</p></div>
 
-<h3 id="model">6. Get a car model</h3>
-<p>We'll use Unreal's free sports car. It's Epic's content, which you're allowed to use in Unreal projects.</p>
+<h3 id="model">6. Prepare and import your model</h3>
+<p>Your model must be yours to share: made by you, or with a licence that allows it. No models ripped from other
+games.</p>
+<p><strong>What the model needs</strong> (set this up in your 3D program before exporting):</p>
+<ul>
+  <li>A <strong>skeletal mesh</strong> (an armature/rig): a <strong>root bone</strong> for the body and
+  <strong>one bone per wheel</strong>, placed at the wheel's centre, with each wheel's geometry skinned 100% to its
+  bone. Short names like <code>FL</code>, <code>FR</code>, <code>RL</code>, <code>RR</code> are fine.</li>
+  <li>Optional: a bone named exactly <code>SteeringWheel</code> for the steering wheel, with its geometry skinned to
+  it; the game turns it as you steer (<a href="#anim-bp">step 12</a>). Other moving parts (doors, wipers) also need
+  their own bones.</li>
+  <li>Facing <strong>+X</strong> (forward), Z up, in centimetres, with the pivot at <strong>ground level</strong>
+  under the middle of the car.</li>
+  <li><strong>The root bone must have zero rotation.</strong> The car's physics takes "forward" from the root bone,
+  not from how the mesh looks. From Blender, export FBX with <em>Armature → Primary Bone Axis: X</em> and
+  <em>Secondary Bone Axis: -Y</em> (or <em>Y</em>), or rotate the root bone so it has no rotation.</li>
+  <li>Phone-friendly: under <strong>30,000 vertices</strong> for a drivable car (<strong>10,000</strong> for a
+  traffic-only car), textures <strong>2048&nbsp;px</strong> or smaller.</li>
+</ul>
+<p><strong>Import it:</strong></p>
 <ol class="steps">
-  <li>Content Browser → <strong>Add</strong> → <strong>Add Feature or Content Pack</strong> → the
-  <strong>Blueprint</strong> tab → <strong>Vehicle</strong> → <strong>Add to Project</strong>. It adds a
-  <code>Vehicles</code> folder (and some template folders) under <code>Content</code>.</li>
-  <li>Select the <code>Vehicles/SportsCar</code> folder and the <code>Vehicles/PhysicsMaterials</code> folder, drag
-  them onto <strong>RaviCars Content</strong>, and choose <strong>Move Here</strong>. <em>Move</em>, not copy:
-  moving fixes all the links between the files.</li>
-  <li>Delete the rest of the template content the pack added (the other <code>Vehicles</code> leftovers, the
-  template maps and characters): select them → right-click → <strong>Delete</strong>.</li>
-  <li>Open <code>SM_SportsCar</code> (the body): in <em>Details</em> → <em>Nanite Settings</em>, <strong>untick
-  Enable Nanite Support</strong>; in <em>LOD Settings</em>, set <strong>Number of LODs</strong> to
-  <strong>3</strong> and click <strong>Apply Changes</strong>. Save.</li>
-  <li>Do the same for <code>SM_SportsCar_Wheel</code>, and for <code>SM_SportsCar_Glass</code> if it has Nanite
-  on. Phones don't support Nanite, and LODs make the car cheap to draw far away.</li>
+  <li>In your pack folder, right-click → <strong>New Folder</strong> → <code>Meshes</code>, and open it.</li>
+  <li>Drag your <code>.fbx</code> file into the Content Browser. In the import dialog tick <strong>Skeletal
+  Mesh</strong> and <strong>Create Physics Asset</strong>, then <strong>Import</strong>. You get the mesh, a
+  <code>…_Skeleton</code>, a <code>…_PhysicsAsset</code>, and its materials and textures.</li>
+  <li><strong>Check the root bone.</strong> Open the <code>…_Skeleton</code>, click the root bone in the
+  <em>Skeleton Tree</em>: its <em>Rotation</em> must read <strong>0, 0, 0</strong>. If it says -90 or 90, the car will
+  spin in place when you accelerate; re-export from Blender as above and reimport. Note the wheel bone names
+  for step 7.</li>
+  <li><strong>Clean up the physics asset.</strong> Open the <code>…_PhysicsAsset</code>. Unreal gave every bone a
+  collision body, including the wheels. Select the bodies on the <strong>four wheel bones</strong> and press
+  <strong>Delete</strong>; keep only the one on the <strong>root (body) bone</strong>. The real wheels are the
+  invisible ones from <em>Wheel Setups</em> (step 7); extra wheel bodies drag on the road and make the car spin or
+  wobble. Save.</li>
+  <li><strong>Make it light for phones.</strong> Open the mesh: in <em>Details</em> → <em>LOD Settings</em>, set
+  <strong>Number of LODs</strong> to <strong>3</strong> and click <strong>Apply Changes</strong>; if there's a
+  <em>Nanite</em> section, untick <strong>Enable Nanite Support</strong>. Save.</li>
 </ol>
-<p>The body material refers to two textures Epic doesn't include; Unreal warns about them. Ignore the warnings,
-or open <code>MI_SportsCarBody</code> and clear those texture slots.</p>
+<div class="note"><p><strong>No model yet?</strong> Unreal's free template sports car (Content Browser →
+<strong>Add</strong> → <strong>Add Feature or Content Pack</strong> → Blueprint → Vehicle) is fine for practice.
+It's built differently (a skeleton plus separate body and wheel meshes); the kit's <code>README.md</code>, section
+3.1, walks through it.</p></div>
 
 <h3 id="drivable">7. Make the car drivable</h3>
 <p>Every car in the game is built on <strong>BP_VehiclePawnBase</strong>. It already handles driving, fuel,
-cameras, sounds and multiplayer; you only say what your car looks like and how it drives.</p>
+cameras, sounds, the wheel animation and multiplayer; you only say what your car looks like and how it drives.</p>
 <ol class="steps">
-  <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Blueprint Class</strong> → expand <em>All
-  Classes</em> → search <strong>BP_VehiclePawnBase</strong> → Select → name it <code>BP_RaviSportsCar</code>.
-  Double-click to open it.</li>
-  <li><strong>The skeleton.</strong> In <em>Components</em> (top left), select <strong>VehicleMesh</strong>. In
-  <em>Details</em>, set <strong>Skeletal Mesh Asset</strong> to <code>SKM_SportsCar</code> and <strong>Anim
-  Class</strong> to <code>ABP_SportsCar</code>. This mesh is only the car's skeleton (the wheel bones), so the
-  viewport still looks empty.</li>
-  <li><strong>The body.</strong> With VehicleMesh selected, click <strong>Add</strong> → <strong>Static
-  Mesh</strong>, name it <code>Body</code>, and set its <strong>Static Mesh</strong> to <code>SM_SportsCar</code>.
-  Add another Static Mesh, <code>Glass</code>, with <code>SM_SportsCar_Glass</code>.</li>
-  <li><strong>The wheels.</strong> Add four more Static Mesh components with <code>SM_SportsCar_Wheel</code>. For
-  each, make sure it sits under <strong>VehicleMesh</strong> (drag it onto VehicleMesh if not), then in
-  <em>Details</em> → <em>Sockets</em> set <strong>Parent Socket</strong> to its wheel bone:
-    <div class="scroll"><table>
-      <thead><tr><th>Component</th><th>Parent Socket</th><th>Rotation</th></tr></thead>
-      <tbody>
-        <tr><td><code>WheelFL</code></td><td><code>Phys_Wheel_FL</code></td><td>0, 0, 0</td></tr>
-        <tr><td><code>WheelFR</code></td><td><code>Phys_Wheel_FR</code></td><td>0, 0, 180</td></tr>
-        <tr><td><code>WheelBL</code></td><td><code>Phys_Wheel_BL</code></td><td>0, 0, 0</td></tr>
-        <tr><td><code>WheelBR</code></td><td><code>Phys_Wheel_BR</code></td><td>0, 0, 180</td></tr>
-      </tbody>
-    </table></div>
-    Set each wheel's <em>Location</em> to 0, 0, 0. The right-hand wheels are turned 180° so their rims face out;
-    if a rim faces inward in the viewport, turn that wheel around.</li>
+  <li>In your pack, create a folder <code>Vehicles</code> if it isn't there. In it: right-click → <strong>Blueprint
+  Class</strong> → expand <em>All Classes</em> → search <strong>BP_VehiclePawnBase</strong> → Select → name it
+  <code>BP_RaviCar</code>. Double-click to open it.</li>
+  <li><strong>The model.</strong> In <em>Components</em> (top left), select <strong>VehicleMesh</strong>. In
+  <em>Details</em>, set <strong>Skeletal Mesh Asset</strong> to your mesh. Leave <strong>Anim Class</strong> as
+  <code>ABP_EvaVehicle</code>: it spins and steers any car's wheels, so you don't make an animation
+  Blueprint.</li>
   <li><strong>The physics wheels.</strong> Select <strong>VehicleMovementComp</strong>. In <em>Vehicle Setup</em>
-  → <strong>Wheel Setups</strong>, make four entries:
+  → <strong>Wheel Setups</strong>, make four entries, with your wheel bone names:
     <div class="scroll"><table>
-      <thead><tr><th>#</th><th>Wheel Class</th><th>Bone Name</th></tr></thead>
+      <thead><tr><th>#</th><th>Wheel Class</th><th>Bone Name (example)</th></tr></thead>
       <tbody>
-        <tr><td>0</td><td><code>BPD_BaseWheel_Front</code></td><td><code>Phys_Wheel_FL</code></td></tr>
-        <tr><td>1</td><td><code>BPD_BaseWheel_Front</code></td><td><code>Phys_Wheel_FR</code></td></tr>
-        <tr><td>2</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>Phys_Wheel_BL</code></td></tr>
-        <tr><td>3</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>Phys_Wheel_BR</code></td></tr>
+        <tr><td>0</td><td><code>BPD_BaseWheel_Front</code></td><td><code>FL</code></td></tr>
+        <tr><td>1</td><td><code>BPD_BaseWheel_Front</code></td><td><code>FR</code></td></tr>
+        <tr><td>2</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>RL</code></td></tr>
+        <tr><td>3</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>RR</code></td></tr>
       </tbody>
     </table></div>
-    These are what touch the road. The bone names must match the skeleton exactly.</li>
-  <li><strong>Make it yours</strong> in VehicleMovementComp:
+    These are what touch the road. The bone names must match the skeleton exactly (letter case too).</li>
+  <li><strong>Wheel size.</strong> The base wheels suit a small car. If yours are bigger or smaller, make your own:
+  in <code>Vehicles</code>, right-click → <strong>Blueprint Class</strong> → All Classes →
+  <strong>BPD_BaseWheel_Front</strong> → name it <code>BPD_RaviCarWheel_Front</code>; do the same from
+  <strong>BPD_BaseWheel_Rear</strong>. In each, set <strong>Wheel Radius</strong> and <strong>Wheel Width</strong>
+  (in cm, measured on your model) and, on the front one, <strong>Max Steer Angle</strong>. Use them in Wheel
+  Setups.</li>
+  <li><strong>Make it drive like your car</strong> in VehicleMovementComp:
     <ul>
       <li><strong>Mass</strong> (kg): a small car 1,100–1,400, an SUV 2,000.</li>
       <li><strong>Engine Setup</strong> → <strong>Max Torque</strong> (N·m) and <strong>Max RPM</strong>: more
@@ -466,27 +479,32 @@ cameras, sounds and multiplayer; you only say what your car looks like and how i
       <li><strong>Transmission Setup</strong>: gear ratios and when it shifts.</li>
       <li><strong>Differential Setup</strong>: front-, rear- or all-wheel drive.</li>
     </ul></li>
+  <li><strong>Only if your wheels are separate meshes</strong> (not part of the skeletal mesh): with VehicleMesh
+  selected, <strong>Add</strong> → <strong>Static Mesh</strong> for each wheel, set its <em>Static Mesh</em>, and
+  in <em>Details</em> → <em>Sockets</em> set <strong>Parent Socket</strong> to that wheel's bone, with
+  <em>Location</em> 0, 0, 0. Turn right-hand wheels 180° around Z if their rims face inward.</li>
+  <li>Optional: steering wheel settings and up to four animation buttons (doors, wipers) are on the
+  <strong>VehicleAnimation</strong> component; see <a href="#anim-bp">step 12</a>.</li>
   <li><strong>Compile</strong> and <strong>Save</strong> (top left).</li>
 </ol>
 <div class="note"><p><strong>Don't add any nodes</strong> to the Event Graph, functions or Construction Script.
 Components and changed values are fine; logic isn't allowed in packs, because phones can't load code from a pack.
 The kit rejects Blueprints with logic.</p></div>
-
 <h3 id="garage">8. Put it in the garage</h3>
 <p>The garage finds cars through a small card called a <strong>vehicle definition</strong>.</p>
 <ol class="steps">
   <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Miscellaneous</strong> → <strong>Data
-  Asset</strong> → <strong>EvaVehicleDefinition</strong> → name it <code>DA_Vehicle_RaviSportsCar</code>. Open
+  Asset</strong> → <strong>EvaVehicleDefinition</strong> → name it <code>DA_Vehicle_RaviCar</code>. Open
   it.</li>
   <li>Fill in:
     <div class="scroll"><table>
       <thead><tr><th>Field</th><th>Example</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>Vehicle Id</td><td><code>ravicars.sportscar</code></td><td>Pack name, a dot, the car; all lowercase, no spaces. <strong>Never change it</strong> once people use your pack: saves refer to it.</td></tr>
-        <tr><td>Display Name</td><td>Ravi Sports Car</td><td>Shown to players.</td></tr>
-        <tr><td>Description</td><td>A light, quick coupé.</td><td>Optional.</td></tr>
+        <tr><td>Vehicle Id</td><td><code>ravicars.ravicar</code></td><td>Pack name, a dot, the car; all lowercase, no spaces. <strong>Never change it</strong> once people use your pack: saves refer to it.</td></tr>
+        <tr><td>Display Name</td><td>Ravi Car</td><td>Shown to players.</td></tr>
+        <tr><td>Description</td><td>A family hatchback.</td><td>Optional.</td></tr>
         <tr><td>Author</td><td>Ravi</td><td>Credit for the car. (The Mods list shows the pack author you gave in step 4.)</td></tr>
-        <tr><td>Pawn Class</td><td><code>BP_RaviSportsCar</code></td><td>Your Blueprint from step 7.</td></tr>
+        <tr><td>Pawn Class</td><td><code>BP_RaviCar</code></td><td>Your Blueprint from step 7.</td></tr>
         <tr><td>Sort Order</td><td><code>100</code></td><td>100 or more, so the game's own cars come first.</td></tr>
       </tbody>
     </table></div></li>
@@ -498,14 +516,14 @@ The kit rejects Blueprints with logic.</p></div>
 one.</p>
 <ol class="steps">
   <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Miscellaneous</strong> → <strong>Data
-  Asset</strong> → <strong>EvaTrafficVehicleDefinition</strong> → name it <code>DA_Traffic_RaviSportsCar</code>.</li>
+  Asset</strong> → <strong>EvaTrafficVehicleDefinition</strong> → name it <code>DA_Traffic_RaviCar</code>.</li>
   <li>Fill in:
     <div class="scroll"><table>
       <thead><tr><th>Field</th><th>Example</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td>Traffic Id</td><td><code>ravicars.sportscar</code></td><td>Same rules as the Vehicle Id.</td></tr>
-        <tr><td>Display Name</td><td>Ravi Sports Car</td><td></td></tr>
-        <tr><td>Static Mesh</td><td><code>SM_SportsCar</code></td><td>The whole car as one mesh. Its wheels don't turn, which is hard to notice in traffic. (Or set <em>Mesh</em> to a skeletal mesh with <a href="#wheel-bones">named wheel bones</a>, and they will.)</td></tr>
+        <tr><td>Traffic Id</td><td><code>ravicars.ravicar</code></td><td>Same rules as the Vehicle Id.</td></tr>
+        <tr><td>Display Name</td><td>Ravi Car</td><td></td></tr>
+        <tr><td>Mesh</td><td>your skeletal mesh</td><td>The same mesh as the drivable car works: its wheels roll if the bones have <a href="#wheel-bones">wheel names</a>. Or set <em>Static Mesh</em> instead to a single mesh of the whole car (its wheels won't turn, which is hard to notice in traffic).</td></tr>
         <tr><td>Weight</td><td><code>0.4</code></td><td>How common it is. The game's own traffic cars are 1 each, so 0.2–0.5 mixes yours in.</td></tr>
         <tr><td>Min / Max Speed Factor</td><td><code>0.9</code> / <code>1.1</code></td><td>Cruising speed as a share of the speed limit.</td></tr>
         <tr><td>Mesh Yaw Offset</td><td><code>0</code></td><td>Set to <code>180</code> if the car drives backwards.</td></tr>
@@ -529,7 +547,7 @@ traffic doesn't use the car's physics setup, so the model's orientation is all t
 <h3 id="test">10. Test it in Unreal</h3>
 <ol class="steps">
   <li><strong>File</strong> → <strong>New Level</strong> → <strong>Basic</strong>. You get a floor to drive on.</li>
-  <li>Drag <code>BP_RaviSportsCar</code> from the Content Browser into the level, just above the floor.</li>
+  <li>Drag <code>BP_RaviCar</code> from the Content Browser into the level, just above the floor.</li>
   <li>With it selected, in <em>Details</em> search <em>Auto Possess</em> and set <strong>Auto Possess
   Player</strong> to <strong>Player 0</strong>.</li>
   <li>Press <strong>Play</strong> (Alt+P). Check that the car sits on its wheels, doesn't sink or bounce, and drives
@@ -577,7 +595,7 @@ traffic doesn't use the car's physics setup, so the model's orientation is all t
     remove the old folder before pushing the new one, so no stale files are left.</li>
   <li><strong>Close the game completely</strong> (swipe it away from recent apps) and open it again.</li>
   <li>On the main menu tap <strong>Mods</strong>. Your pack should say <strong>Loaded</strong> and list
-  <em>Vehicles: Ravi Sports Car</em> and <em>Traffic: Ravi Sports Car</em>. If it says <em>Could not load</em>,
+  <em>Vehicles: Ravi Car</em> and <em>Traffic: Ravi Car</em>. If it says <em>Could not load</em>,
   the reason is underneath; see <a href="#trouble">Troubleshooting</a>.</li>
   <li>Go to the garage: your car comes after the game's own. Drive it, and watch for it in traffic.</li>
 </ol>
@@ -585,42 +603,7 @@ traffic doesn't use the car's physics setup, so the model's orientation is all t
 zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players install it as described in
 <a href="#install">Install a vehicle pack</a>.</p>
 
-<h3 id="own-model">12. Using your own model</h3>
-<p>Your model must be yours to share (made by you, or with a licence that allows it). Then:</p>
-<ul>
-  <li><strong>For a drivable car</strong>: a <strong>skeletal mesh</strong> with a root bone for the body and
-  <strong>one bone per wheel</strong> at the wheel's centre, each wheel skinned 100% to its bone.</li>
-  <li>Facing <strong>+X</strong> (forward), Z up, in centimetres, pivot at <strong>ground level</strong> under the
-  middle of the car.</li>
-  <li><strong>The root bone must have zero rotation.</strong> The car's physics takes "forward" from the root
-  bone, not from how the mesh looks. After importing, select the root bone in the Skeleton Tree: its
-  <em>Rotation</em> must read <strong>0, 0, 0</strong>. If it says -90 or 90 (typical for Blender rigs), the car will
-  spin in place when you accelerate. In Blender, re-export with <em>Armature → Primary Bone Axis: X</em> and
-  <em>Secondary Bone Axis: -Y</em> (or <em>Y</em>), or rotate the root bone so it lies across the car with roll 0.</li>
-  <li>Phone-friendly: under <strong>30,000 vertices</strong> for drivable cars and <strong>10,000</strong> for traffic,
-  with <strong>LODs</strong>, textures <strong>2048&nbsp;px</strong> or smaller, Nanite off.</li>
-</ul>
-<ol class="steps">
-  <li>Import the FBX into <code>RaviCars/Meshes</code> (drag the file into the Content Browser). Tick
-  <strong>Skeletal Mesh</strong> and <strong>Create Physics Asset</strong>.</li>
-  <li><strong>Clean up the physics asset.</strong> Open the new <code>…_PhysicsAsset</code>. Unreal gave every bone a
-  collision body, including the wheels. Select the bodies on the <strong>four wheel bones</strong> and press
-  <strong>Delete</strong>; keep only the one on the <strong>root (body) bone</strong>. The real wheels are the
-  invisible ones from <em>Wheel Setups</em>; extra wheel bodies drag on the road and make the car spin or
-  wobble. Save.</li>
-  <li>Optional: name the steering wheel bone <code>SteeringWheel</code> so it turns (see <a href="#anim-bp">step
-  13</a>).</li>
-  <li>Follow step 7, but set VehicleMesh's <em>Skeletal Mesh Asset</em> to your mesh and leave <em>Anim Class</em> as
-  <code>ABP_EvaVehicle</code>: it spins and steers any car's wheels, so you don't make an animation Blueprint. If
-  the wheels are part of your skeletal mesh, you don't need the Static Mesh components.</li>
-  <li>Use your own wheel bone names in <em>Wheel Setups</em>.</li>
-  <li>If your wheels are bigger or smaller than a small car's, make your own wheel classes: right-click →
-  <strong>Blueprint Class</strong> → All Classes → <strong>BPD_BaseWheel</strong> → one for the front and one for
-  the rear; set <strong>Wheel Radius</strong>, <strong>Wheel Width</strong> and (front)
-  <strong>Max Steer Angle</strong>. Use them in <em>Wheel Setups</em>.</li>
-</ol>
-
-<h3 id="anim-bp">13. Animation: steering wheel, buttons and custom animations</h3>
+<h3 id="anim-bp">12. Animation: steering wheel, buttons and custom animations</h3>
 <p>You don't need to make an animation Blueprint. Every car made from <code>BP_VehiclePawnBase</code> uses the
 game's <code>ABP_EvaVehicle</code>, which works on any skeleton: it spins and steers the wheel bones in your
 <em>Wheel Setups</em> and turns the steering wheel. Everything below is set on the car's
@@ -680,7 +663,7 @@ pack that may contain nodes.</p>
 <strong>Engine RPM</strong>, <strong>Handbrake</strong>, <strong>Is Reversing</strong>, <strong>Is Player
 Driving</strong>, and <strong>Action 1..4</strong> (on/off). For example, a speedometer needle is a Transform
 (Modify) Bone whose rotation comes from Speed.</p>
-<h3 id="trouble">14. Troubleshooting</h3>
+<h3 id="trouble">13. Troubleshooting</h3>
 <div class="scroll"><table>
   <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
   <tbody>
@@ -692,12 +675,12 @@ Driving</strong>, and <strong>Action 1..4</strong> (on/off). For example, a spee
     <tr><td>Car not in the garage</td><td>The definition isn't in <code>/RaviCars/Vehicles</code>, <em>Pawn Class</em> is empty, or the GameFeatureData is missing the <code>EvaVehicle</code> entry.</td></tr>
     <tr><td>Car floats, sinks or flips</td><td>Wheel <em>Bone Names</em> don't match the skeleton, wrong wheel radius, or the model's pivot isn't at ground level.</td></tr>
     <tr><td>Wheels don't turn</td><td>VehicleMesh's <em>Anim Class</em> isn't <code>ABP_EvaVehicle</code> (or an animation Blueprint for your skeleton), or the <em>Bone Names</em> in Wheel Setups are wrong.</td></tr>
-    <tr><td>Steering wheel doesn't turn, or turns the wrong way</td><td>The bone must be named exactly <code>SteeringWheel</code>. Change <em>Steering Wheel Angle</em> (negative) or <em>Steering Wheel Axis</em> on VehicleAnimation (step 13).</td></tr>
+    <tr><td>Steering wheel doesn't turn, or turns the wrong way</td><td>The bone must be named exactly <code>SteeringWheel</code>. Change <em>Steering Wheel Angle</em> (negative) or <em>Steering Wheel Axis</em> on VehicleAnimation (step 12).</td></tr>
     <tr><td>A button is missing</td><td>That slot's <em>Name</em> is empty in VehicleAnimation's <em>Actions</em>.</td></tr>
     <tr><td>Button works but nothing moves</td><td>The Extras Blueprint must implement <code>ALI_EvaVehicleExtras</code> and be set as <em>Extras Anim Class</em>; <em>Anim Class</em> must stay <code>ABP_EvaVehicle</code>. Type the amount on the node's pin, connect <em>Action N Alpha</em> to <em>Alpha</em>, and compile after every change.</td></tr>
     <tr><td>Wheel meshes float away from the car</td><td>The wheel component isn't under VehicleMesh, <em>Parent Socket</em> is wrong, or its Location isn't 0, 0, 0.</td></tr>
     <tr><td>Car drives backwards when accelerating</td><td>The Torque Curve dips below zero: make its keys linear (step 7).</td></tr>
-    <tr><td>Car spins in place when accelerating (one way forward, the other in reverse)</td><td>The root bone is rotated (it must read 0, 0, 0), or the physics asset still has bodies on the wheel bones. See <a href="#own-model">step 12</a>.</td></tr>
+    <tr><td>Car spins in place when accelerating (one way forward, the other in reverse)</td><td>The root bone is rotated (it must read 0, 0, 0), or the physics asset still has bodies on the wheel bones. See <a href="#model">step 6</a>.</td></tr>
     <tr><td>Traffic car drives backwards</td><td>Set <em>Mesh Yaw Offset</em> to 180.</td></tr>
     <tr><td>Can't see <code>Android/data</code> on the phone from Windows</td><td>Use USB debugging and <code>-Push</code> (step 11).</td></tr>
   </tbody>

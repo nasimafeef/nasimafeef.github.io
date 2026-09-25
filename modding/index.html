@@ -316,7 +316,7 @@ using your own model. It takes about an hour the first time, most of it waiting 
     <li><a href="#test">Test it in Unreal</a></li>
     <li><a href="#build">Check, build and install</a></li>
     <li><a href="#own-model">Using your own model</a></li>
-    <li><a href="#anim-bp">Wheel animation Blueprint</a></li>
+    <li><a href="#anim-bp">Animation, buttons and custom animations</a></li>
     <li><a href="#trouble">Troubleshooting</a></li>
   </ol>
 </nav>
@@ -608,10 +608,11 @@ zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players in
   <strong>Delete</strong>; keep only the one on the <strong>root (body) bone</strong>. The real wheels are the
   invisible ones from <em>Wheel Setups</em>; extra wheel bodies drag on the road and make the car spin or
   wobble. Save.</li>
-  <li>Make the <a href="#anim-bp">wheel animation Blueprint</a> (step 13).</li>
-  <li>Follow step 7, but set VehicleMesh's <em>Skeletal Mesh Asset</em> to your mesh and <em>Anim Class</em> to your
-  animation Blueprint. If the wheels are part of your skeletal mesh, you don't need the Static Mesh
-  components.</li>
+  <li>Optional: name the steering wheel bone <code>SteeringWheel</code> so it turns (see <a href="#anim-bp">step
+  13</a>).</li>
+  <li>Follow step 7, but set VehicleMesh's <em>Skeletal Mesh Asset</em> to your mesh and leave <em>Anim Class</em> as
+  <code>ABP_EvaVehicle</code>: it spins and steers any car's wheels, so you don't make an animation Blueprint. If
+  the wheels are part of your skeletal mesh, you don't need the Static Mesh components.</li>
   <li>Use your own wheel bone names in <em>Wheel Setups</em>.</li>
   <li>If your wheels are bigger or smaller than a small car's, make your own wheel classes: right-click →
   <strong>Blueprint Class</strong> → All Classes → <strong>BPD_BaseWheel</strong> → one for the front and one for
@@ -619,60 +620,66 @@ zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players in
   <strong>Max Steer Angle</strong>. Use them in <em>Wheel Setups</em>.</li>
 </ol>
 
-<h3 id="anim-bp">13. Wheel animation Blueprint (and a turning steering wheel)</h3>
-<p>The animation Blueprint makes the wheel meshes spin and steer with the physics wheels, and can turn a
-steering wheel inside the car. It's the one kind of Blueprint in a pack that may contain nodes. (The template
-sports car already has one, <code>ABP_SportsCar</code>.)</p>
+<h3 id="anim-bp">13. Animation: steering wheel, buttons and custom animations</h3>
+<p>You don't need to make an animation Blueprint. Every car made from <code>BP_VehiclePawnBase</code> uses the
+game's <code>ABP_EvaVehicle</code>, which works on any skeleton: it spins and steers the wheel bones in your
+<em>Wheel Setups</em> and turns the steering wheel. Everything below is set on the car's
+<strong>VehicleAnimation</strong> component (select it in your vehicle Blueprint's Components panel).</p>
+<p class="note">Needs the current mod kit: if <code>/Game/Blueprints/VehicleBP</code> in your kit has no
+<code>ABP_EvaVehicle</code>, download the kit again.</p>
 
-<p><strong>Create it</strong></p>
+<p><strong>A steering wheel that turns</strong></p>
 <ol class="steps">
-  <li>In the Content Browser, find your mesh's <strong>Skeleton</strong> (<code>…_Skeleton</code>), right-click it →
-  <strong>Create</strong> → <strong>Anim Blueprint</strong>.</li>
-  <li>In the dialog, pick the parent class <strong>VehicleAnimationInstance</strong> (search "Vehicle"). Name it
-  <code>ABP_&lt;Car&gt;</code> and save it in your pack.</li>
+  <li>In your 3D model, give the steering wheel its own bone named exactly <strong><code>SteeringWheel</code></strong>,
+  with the steering-wheel geometry skinned to it.</li>
+  <li>On the VehicleAnimation component: <strong>Steering Wheel Angle</strong> = how far it turns at full lock, in
+  degrees (default 90; a negative number turns it the other way). <strong>Steering Wheel Axis</strong> = Roll, Pitch
+  or Yaw, the axis the bone turns around. Try Roll first; if the wheel tilts instead of turning, try the
+  others.</li>
 </ol>
 
-<p><strong>Wire the AnimGraph</strong> (open the Blueprint → the <em>AnimGraph</em> tab; it already has an
-<em>Output Pose</em> node)</p>
-<ol class="steps">
-  <li>Right-click an empty spot → search <strong>Mesh Space Ref Pose</strong> → add it. It outputs the car's rest
-  pose.</li>
-  <li>Right-click → search <strong>Wheel Controller</strong> (the Chaos vehicle node, "Wheel Controller for
-  WheeledVehicle") → add it. Drag from Mesh Space Ref Pose's pose pin into the Wheel Controller's
-  <em>Component Pose</em> input. It spins and steers every bone named in your car's <em>Wheel Setups</em>.</li>
-  <li>Drag from the Wheel Controller's output pin into <strong>Output Pose</strong>. Unreal inserts a
-  <strong>Component To Local</strong> node between them automatically; if it doesn't, add one yourself
-  (search "Component To Local") and connect Wheel Controller → Component To Local → Output Pose.</li>
-  <li><strong>Compile</strong> and <strong>Save</strong>. The chain is:
-    <pre><code>Mesh Space Ref Pose → Wheel Controller → Component To Local → Output Pose</code></pre></li>
-  <li>In your vehicle Blueprint, select <strong>VehicleMesh</strong> and set <strong>Anim Class</strong> to this
-  Blueprint. Compile and save.</li>
-</ol>
+<p><strong>Buttons for your own animations</strong> (doors, wipers, a lift...). The driving screen has four
+buttons. On the VehicleAnimation component, fill in <strong>Actions</strong>; the four slots are the four
+buttons in order:</p>
+<ul>
+  <li><strong>Name</strong>: the button's label. Leave it empty and that button is hidden.</li>
+  <li><strong>Mode</strong>: <em>Toggle</em> (each press switches it on or off) or <em>Hold</em> (on while the
+  button is held).</li>
+  <li><strong>Blend Time</strong>: seconds the animation takes to go from closed to open.</li>
+</ul>
+<p>Other players in a multiplayer game see your actions too.</p>
 
-<p><strong>Optional: a steering wheel that turns</strong> (this is how the game's Thor does it). Your model needs a
-separate <strong>bone for the steering wheel</strong>, with the steering-wheel geometry skinned to it.</p>
+<p><strong>Making the animation: an Extras Blueprint.</strong> It adds your animation on top of
+<code>ABP_EvaVehicle</code>, so the wheels and steering wheel keep working. It's the one kind of Blueprint in a
+pack that may contain nodes.</p>
 <ol class="steps">
-  <li>In the animation Blueprint, in <em>My Blueprint</em> → <em>Variables</em>, click <strong>+</strong> and add a
-  <strong>Float</strong> variable called <code>SteeringValue</code>.</li>
-  <li>Open the <strong>Event Graph</strong>. From <strong>Event Blueprint Update Animation</strong> (already there),
-  build this chain:
-    <pre><code>Try Get Pawn Owner → Cast To BP_VehiclePawnBase → Get Steering Value
-→ Multiply (× how far the wheel turns at full lock, e.g. 90) → Set SteeringValue</code></pre>
-    Connect the event's execution pin to the <em>Cast</em>, and the Cast's execution pin to <em>Set
-    SteeringValue</em>. <em>Get Steering Value</em> is a function on the base car: it returns the current steering
-    from -1 (full left) to 1 (full right).</li>
-  <li>Back in the <strong>AnimGraph</strong>, add <strong>Transform (Modify) Bone</strong> between the Wheel
-  Controller and Component To Local:
-    <pre><code>Mesh Space Ref Pose → Wheel Controller → Transform (Modify) Bone → Component To Local → Output Pose</code></pre></li>
-  <li>Select the Transform (Modify) Bone node. In <em>Details</em>: <strong>Bone to Modify</strong> = your steering
-  wheel bone; <strong>Rotation Mode</strong> = <em>Add to Existing</em>; <strong>Rotation Space</strong> =
-  <em>Bone Space</em>; leave Translation and Scale on <em>Ignore</em>.</li>
-  <li>Drag <code>SteeringValue</code> into the graph (<em>Get</em>), add a <strong>Make Rotator</strong>, connect
-  SteeringValue to its <strong>Roll</strong>, and connect Make Rotator to the node's <strong>Rotation</strong> pin.</li>
-  <li>Compile, save and test. If the steering wheel turns around the wrong axis, move SteeringValue to
-  <strong>Pitch</strong> or <strong>Yaw</strong> instead (it depends on how the bone is oriented). If it turns the
-  wrong way, use a negative number in the Multiply (e.g. -90).</li>
+  <li>In your pack, right-click → <strong>Animation</strong> → <strong>Animation Blueprint</strong>. In the dialog:
+  <strong>Parent Class</strong> = <strong>EvaVehicleAnimInstance</strong> (search for it; it's a C++ class; don't
+  pick <code>ABP_EvaVehicle</code>, a child of it can't change its animation). <strong>Skeleton</strong> = your
+  car's skeleton. Name it <code>ABP_&lt;Car&gt;_Extras</code>.</li>
+  <li>Open it. Click <strong>Class Settings</strong> in the toolbar. In <em>Details</em> → <em>Interfaces</em> →
+  <em>Implemented Interfaces</em>, click <strong>Add</strong> → <strong>ALI_EvaVehicleExtras</strong>. Under
+  <em>My Blueprint</em> → <em>Animation Layers</em> a layer called <strong>Extras</strong> appears.
+  Double-click it: it has an <strong>Input Pose</strong> connected to an <strong>Output Pose</strong>.</li>
+  <li>Build between them. For example, a door on button 1:
+    <pre><code>Input Pose → Local To Component → Transform (Modify) Bone → Component To Local → Output Pose</code></pre>
+    Right-click an empty spot and search each node's name to add it; drag between the pose pins to connect.</li>
+  <li>Select <strong>Transform (Modify) Bone</strong>. In <em>Details</em>: <strong>Bone to Modify</strong> = the
+  door bone; <strong>Rotation Mode</strong> = <em>Add to Existing</em>; <strong>Rotation Space</strong> =
+  <em>Bone Space</em>. Type how far it opens <strong>on the node's Rotation pin</strong> in the graph (e.g. Yaw 70).
+  While a pin is shown on the node, its value is used and the same field in Details is ignored.</li>
+  <li>Right-click → search <strong>Get Action 1 Alpha</strong> → connect it to the node's <strong>Alpha</strong>
+  pin. It goes from 0 (closed) to 1 (open) over the Blend Time when button 1 is pressed. Buttons 2–4 are
+  <em>Action 2..4 Alpha</em>.</li>
+  <li><strong>Compile</strong> and <strong>Save</strong>. In your vehicle Blueprint, select VehicleAnimation and set
+  <strong>Extras Anim Class</strong> to this Blueprint. Leave VehicleMesh's <em>Anim Class</em> as
+  <code>ABP_EvaVehicle</code>.</li>
 </ol>
+<p>Other values you can use in the Extras graph (right-click → search the name): <strong>Speed</strong> (km/h),
+<strong>Throttle</strong>, <strong>Brake</strong>, <strong>Steering</strong> (-1 to 1), <strong>Gear</strong>,
+<strong>Engine RPM</strong>, <strong>Handbrake</strong>, <strong>Is Reversing</strong>, <strong>Is Player
+Driving</strong>, and <strong>Action 1..4</strong> (on/off). For example, a speedometer needle is a Transform
+(Modify) Bone whose rotation comes from Speed.</p>
 <h3 id="trouble">14. Troubleshooting</h3>
 <div class="scroll"><table>
   <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
@@ -684,7 +691,10 @@ separate <strong>bone for the steering wheel</strong>, with the steering-wheel g
     <tr><td>Mods says <em>Could not load</em></td><td>Read the reason under it. Usually the pack was built with a kit for another game version, or copied to the wrong folder (the <code>.uplugin</code> must be directly inside <code>GameFeatures/RaviCars/</code>).</td></tr>
     <tr><td>Car not in the garage</td><td>The definition isn't in <code>/RaviCars/Vehicles</code>, <em>Pawn Class</em> is empty, or the GameFeatureData is missing the <code>EvaVehicle</code> entry.</td></tr>
     <tr><td>Car floats, sinks or flips</td><td>Wheel <em>Bone Names</em> don't match the skeleton, wrong wheel radius, or the model's pivot isn't at ground level.</td></tr>
-    <tr><td>Wheels don't turn</td><td><em>Anim Class</em> isn't set on VehicleMesh, or the animation Blueprint lacks the <em>Wheel Handler</em> node.</td></tr>
+    <tr><td>Wheels don't turn</td><td>VehicleMesh's <em>Anim Class</em> isn't <code>ABP_EvaVehicle</code> (or an animation Blueprint for your skeleton), or the <em>Bone Names</em> in Wheel Setups are wrong.</td></tr>
+    <tr><td>Steering wheel doesn't turn, or turns the wrong way</td><td>The bone must be named exactly <code>SteeringWheel</code>. Change <em>Steering Wheel Angle</em> (negative) or <em>Steering Wheel Axis</em> on VehicleAnimation (step 13).</td></tr>
+    <tr><td>A button is missing</td><td>That slot's <em>Name</em> is empty in VehicleAnimation's <em>Actions</em>.</td></tr>
+    <tr><td>Button works but nothing moves</td><td>The Extras Blueprint must implement <code>ALI_EvaVehicleExtras</code> and be set as <em>Extras Anim Class</em>; <em>Anim Class</em> must stay <code>ABP_EvaVehicle</code>. Type the amount on the node's pin, connect <em>Action N Alpha</em> to <em>Alpha</em>, and compile after every change.</td></tr>
     <tr><td>Wheel meshes float away from the car</td><td>The wheel component isn't under VehicleMesh, <em>Parent Socket</em> is wrong, or its Location isn't 0, 0, 0.</td></tr>
     <tr><td>Car drives backwards when accelerating</td><td>The Torque Curve dips below zero: make its keys linear (step 7).</td></tr>
     <tr><td>Car spins in place when accelerating (one way forward, the other in reverse)</td><td>The root bone is rotated (it must read 0, 0, 0), or the physics asset still has bodies on the wheel bones. See <a href="#own-model">step 12</a>.</td></tr>

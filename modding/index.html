@@ -437,7 +437,7 @@ games.</p>
 <div class="note"><p><strong>No model yet?</strong> Unreal's free template sports car (Content Browser →
 <strong>Add</strong> → <strong>Add Feature or Content Pack</strong> → Blueprint → Vehicle) is fine for practice.
 It's built differently (a skeleton plus separate body and wheel meshes); the kit's <code>README.md</code>, section
-3.1, walks through it.</p></div>
+3.5, walks through it.</p></div>
 
 <h3 id="drivable">7. Make the car drivable</h3>
 <p>Every car in the game is built on <strong>BP_VehiclePawnBase</strong>. It already handles driving, fuel,
@@ -663,6 +663,20 @@ pack that may contain nodes.</p>
 <strong>Engine RPM</strong>, <strong>Handbrake</strong>, <strong>Is Reversing</strong>, <strong>Is Player
 Driving</strong>, and <strong>Action 1..4</strong> (on/off). For example, a speedometer needle is a Transform
 (Modify) Bone whose rotation comes from Speed.</p>
+
+<p><strong>More examples.</strong> Several parts can move in one Extras layer: chain one Transform (Modify) Bone per
+part between <em>Local To Component</em> and <em>Component To Local</em>.</p>
+<div class="scroll"><table>
+  <thead><tr><th>Action</th><th>Mode</th><th>Transform (Modify) Bone</th><th>Alpha</th></tr></thead>
+  <tbody>
+    <tr><td>Door opens</td><td>Toggle</td><td>door bone; Rotation pin Yaw 70; Rotation Mode <em>Add to Existing</em>, Space <em>Bone Space</em></td><td>Action 1 Alpha</td></tr>
+    <tr><td>Bonnet opens</td><td>Toggle</td><td>bonnet bone; Rotation pin Pitch -45</td><td>Action 2 Alpha</td></tr>
+    <tr><td>Lift / tipper</td><td>Hold</td><td>bed bone; Translation pin Z 50; Translation Mode <em>Add to Existing</em></td><td>Action 3 Alpha</td></tr>
+    <tr><td>Wipers</td><td>Toggle</td><td>wiper bone; Rotation pin Roll 80</td><td>Action 4 Alpha</td></tr>
+  </tbody>
+</table></div>
+<p>A <em>Hold</em> action goes back when the button is released; a <em>Toggle</em> one stays until pressed again.
+Try the axis and sign (e.g. -70) until the part moves the right way; it depends on how the bone was made.</p>
 <h3 id="trouble">13. Troubleshooting</h3>
 <div class="scroll"><table>
   <thead><tr><th>Problem</th><th>Fix</th></tr></thead>

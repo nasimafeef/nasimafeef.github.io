@@ -504,7 +504,7 @@ one.</p>
       <tbody>
         <tr><td>Traffic Id</td><td><code>ravicars.sportscar</code></td><td>Same rules as the Vehicle Id.</td></tr>
         <tr><td>Display Name</td><td>Ravi Sports Car</td><td></td></tr>
-        <tr><td>Static Mesh</td><td><code>SM_SportsCar</code></td><td>The whole car as one mesh. Its wheels don't turn, which is hard to notice in traffic. (Or set <em>Mesh</em> to a skeletal mesh whose wheel bones are named with <em>wheel</em>, <em>tyre</em> or <em>tire</em>, and they will.)</td></tr>
+        <tr><td>Static Mesh</td><td><code>SM_SportsCar</code></td><td>The whole car as one mesh. Its wheels don't turn, which is hard to notice in traffic. (Or set <em>Mesh</em> to a skeletal mesh with <a href="#wheel-bones">named wheel bones</a>, and they will.)</td></tr>
         <tr><td>Weight</td><td><code>0.4</code></td><td>How common it is. The game's own traffic cars are 1 each, so 0.2–0.5 mixes yours in.</td></tr>
         <tr><td>Min / Max Speed Factor</td><td><code>0.9</code> / <code>1.1</code></td><td>Cruising speed as a share of the speed limit.</td></tr>
         <tr><td>Mesh Yaw Offset</td><td><code>0</code></td><td>Set to <code>180</code> if the car drives backwards.</td></tr>
@@ -513,6 +513,18 @@ one.</p>
   <li>Save.</li>
 </ol>
 
+<p id="wheel-bones"><strong>Rolling wheels on traffic cars.</strong> For a skeletal mesh, the game finds the wheel bones by
+name (letter case doesn't matter) and spins them as the car drives:</p>
+<div class="scroll"><table>
+  <thead><tr><th>A bone is a wheel if</th><th>Examples</th></tr></thead>
+  <tbody>
+    <tr><td>its name <strong>contains</strong> <code>wheel</code>, <code>tyre</code> or <code>tire</code></td><td><code>Wheel_FL</code>, <code>Phys_Wheel_BL</code>, <code>tyre_rear_left</code></td></tr>
+    <tr><td>its name <strong>is exactly</strong> a corner code: <code>FL</code> <code>FR</code> <code>RL</code> <code>RR</code> <code>BL</code> <code>BR</code> <code>LF</code> <code>RF</code> <code>LR</code> <code>RB</code> <code>LB</code></td><td><code>FL</code>, <code>rr</code>, <code>Bl</code> (but not <code>FL_Door</code>)</td></tr>
+    <tr><td><strong>never</strong> if the name contains <code>steer</code>, <code>hub</code>, <code>suspension</code> or <code>brake</code></td><td><code>Steering</code>, <code>Hub_FL</code>, <code>BrakeDisc_FR</code></td></tr>
+  </tbody>
+</table></div>
+<p>If a traffic car faces sideways or backwards on the road, fix it with <em>Mesh Yaw Offset</em> (90, -90 or 180):
+traffic doesn't use the car's physics setup, so the model's orientation is all that matters.</p>
 <h3 id="test">10. Test it in Unreal</h3>
 <ol class="steps">
   <li><strong>File</strong> → <strong>New Level</strong> → <strong>Basic</strong>. You get a floor to drive on.</li>

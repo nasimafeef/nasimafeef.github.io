@@ -218,6 +218,31 @@
     place-items: center;
   }
 
+  .scroll { overflow-x: auto; margin: 14px 0; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule); }
+  thead th {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sign);
+    border-bottom: 2px solid var(--sign);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin: 18px 0 8px;
+  }
+  nav.toc ol { margin: 0; padding-left: 22px; columns: 2 220px; column-gap: 28px; }
+  nav.toc li { margin: 4px 0; break-inside: avoid; }
+  h3 { scroll-margin-top: 16px; }
+  td ul { margin: 6px 0; }
   footer {
     margin-top: 52px;
     padding-top: 20px;
@@ -273,45 +298,310 @@
 </div>
 
 <h2 id="make">Make your own</h2>
-<p>This is the outline. The Mod Kit contains the full step-by-step guide, with every setting explained.</p>
+<p>This walks you through making a pack from nothing to driving your own car on your phone. The example uses
+Unreal's free template sports car, so you can follow every step exactly; <a href="#own-model">step 12</a> covers
+using your own model. It takes about an hour the first time, most of it waiting for downloads.</p>
 
-<h3>What you need</h3>
+<nav class="toc" aria-label="Steps">
+  <ol>
+    <li><a href="#need">What you need</a></li>
+    <li><a href="#unreal">Install Unreal Engine 5.8</a></li>
+    <li><a href="#kit">Unzip the Mod Kit</a></li>
+    <li><a href="#pack">Create your pack</a></li>
+    <li><a href="#gfd">Set up the pack in Unreal</a></li>
+    <li><a href="#model">Get a car model</a></li>
+    <li><a href="#drivable">Make the car drivable</a></li>
+    <li><a href="#garage">Put it in the garage</a></li>
+    <li><a href="#traffic">Add it to traffic</a></li>
+    <li><a href="#test">Test it in Unreal</a></li>
+    <li><a href="#build">Check, build and install</a></li>
+    <li><a href="#own-model">Using your own model</a></li>
+    <li><a href="#trouble">Troubleshooting</a></li>
+  </ol>
+</nav>
+
+<h3 id="need">1. What you need</h3>
 <ul>
-  <li>A <strong>Windows PC</strong> and <strong>Unreal Engine 5.8</strong> (free, from the Epic Games Launcher,
-  with the <em>Android</em> target platform ticked).</li>
-  <li>The <a href="#mod-kit">Mod Kit</a> for the current version of the game.</li>
-  <li>A <strong>3D car model you have the rights to</strong>. The kit contains no car models; Unreal's own
-  sports car template is fine for learning.</li>
-  <li>For testing: an Android phone with USB debugging.</li>
+  <li>A <strong>Windows PC</strong> with about 60&nbsp;GB free (Unreal Engine is big).</li>
+  <li><strong>Unreal Engine 5.8</strong>: free, from the Epic Games Launcher (step 2).</li>
+  <li>The <a href="#mod-kit">Mod Kit</a> for the version of the game on your phone.</li>
+  <li>An Android phone with the game, and a USB cable.</li>
+  <li>No coding. You only place things and fill in settings.</li>
 </ul>
 
-<h3>The steps</h3>
+<h3 id="unreal">2. Install Unreal Engine 5.8</h3>
 <ol class="steps">
-  <li><strong>Create your pack.</strong> One script creates it: pick a short one-word name. It becomes the start
-  of every vehicle id in the pack, like <code>ravicars.swift</code>.</li>
-  <li><strong>Add a drivable car.</strong> Import a skeletal mesh with one bone per wheel, make a small wheel
-  animation Blueprint, and a vehicle Blueprint based on the kit's <code>BP_VehiclePawnBase</code>. Driving,
-  fuel, cameras, sounds and multiplayer all come from it. Then a <em>vehicle definition</em> puts the car in the
-  garage.</li>
-  <li><strong>Add a traffic car.</strong> Only a model is needed, and a static mesh is fine. A <em>traffic
-  definition</em> sets how common it is and how fast it drives.</li>
-  <li><strong>Check it.</strong> Right-click your pack → <em>Validate Assets</em>. The kit flags anything that
-  won't work on phones or won't build.</li>
-  <li><strong>Build and install.</strong> One script builds the installable folder, and can copy it straight to a
-  connected phone.</li>
+  <li>Install the <strong>Epic Games Launcher</strong> from epicgames.com and sign in (a free Epic account).</li>
+  <li>In the launcher: <strong>Unreal Engine</strong> → <strong>Library</strong> → the <strong>+</strong> next to
+  <em>Engine Versions</em>. Choose version <strong>5.8</strong>.</li>
+  <li><strong>Before</strong> installing, click the arrow next to <em>Install</em> → <strong>Options</strong>, and
+  tick <strong>Android</strong> under <em>Target Platforms</em>. Without it the kit can't build for phones.
+  If you already installed 5.8 without it: Library → the arrow next to <em>Launch</em> → Options → tick Android
+  → Apply.</li>
+  <li>Click <strong>Install</strong>. It's a large download; carry on reading while it runs.</li>
+</ol>
+<div class="note"><p><strong>Use exactly 5.8.</strong> The kit's game plugins are built for it; any other
+version refuses to open the kit.</p></div>
+
+<h3 id="kit">3. Unzip the Mod Kit</h3>
+<ol class="steps">
+  <li><a href="#mod-kit">Download the Mod Kit</a> for your game version.</li>
+  <li>Unzip it somewhere with a short path, such as <code>C:\Mods\</code>. You get a folder called
+  <code>VehicleSimulator</code>. <strong>Don't rename it</strong>: the game finds pack files by that name.</li>
+  <li>Open <code>MODKIT_RELEASE.txt</code> inside. It says which game release the kit is for. A pack only works on
+  that release; when the game updates, download the new kit and rebuild your pack (step 11).</li>
+</ol>
+<p>The kit contains the parts of the game a car plugs into, the tools, and the full written guide
+(<code>README.md</code>). It contains <strong>no car models and no sounds</strong>: cars are silent while you work
+in Unreal, and use the game's engine, skid and crash sounds on your phone.</p>
+
+<h3 id="pack">4. Create your pack</h3>
+<ol class="steps">
+  <li>Pick a pack name: <strong>one word, letters and digits only</strong>, for example <code>RaviCars</code>. It
+  becomes the start of every id in your pack, and can't change later.</li>
+  <li>Make sure Unreal is <strong>closed</strong>.</li>
+  <li>Open the <code>VehicleSimulator</code> folder in File Explorer, click the address bar, type
+  <code>powershell</code> and press Enter. A PowerShell window opens in that folder.</li>
+  <li>Run this, with your own pack name, display name and author:
+    <pre><code>powershell -ExecutionPolicy Bypass -File Tools/Mods/New-VehiclePack.ps1 -Pack RaviCars -FriendlyName "Ravi's Cars" -Author "Ravi"</code></pre>
+    It creates <code>Plugins/GameFeatures/RaviCars</code> and switches the pack on in Unreal.</li>
 </ol>
 
-<h3>Tips</h3>
+<h3 id="gfd">5. Set up the pack in Unreal</h3>
+<ol class="steps">
+  <li>Double-click <code>VehicleSimulator.uproject</code>. The first start takes several minutes while Unreal
+  prepares shaders. If it asks which engine to use, choose 5.8.</li>
+  <li>At the bottom, open the <strong>Content Browser</strong> (Ctrl+Space). Click its <strong>Settings</strong>
+  (⚙) and tick <strong>Show Plugin Content</strong>. A folder <strong>RaviCars Content</strong> appears in the list
+  on the left.</li>
+  <li>Right-click inside that folder → <strong>Miscellaneous</strong> → <strong>Data Asset</strong> → pick
+  <strong>GameFeatureData</strong> → name it <strong>exactly like your pack</strong>: <code>RaviCars</code>.</li>
+  <li>Double-click it. Under <em>Primary Asset Types to Scan</em>, click <strong>+</strong> twice and fill in:
+    <div class="scroll"><table>
+      <thead><tr><th>Primary Asset Type</th><th>Asset Base Class</th><th>Directories</th><th>Rules → Cook Rule</th></tr></thead>
+      <tbody>
+        <tr><td><code>EvaVehicle</code></td><td><code>EvaVehicleDefinition</code></td><td><code>/RaviCars/Vehicles</code></td><td>Always Cook</td></tr>
+        <tr><td><code>EvaTrafficVehicle</code></td><td><code>EvaTrafficVehicleDefinition</code></td><td><code>/RaviCars/Vehicles</code></td><td>Always Cook</td></tr>
+      </tbody>
+    </table></div>
+    Type the directory with your own pack name. These tell the game where to find your cars.</li>
+  <li>In the pack folder, right-click → <strong>New Folder</strong> → <code>Vehicles</code>.</li>
+  <li><strong>Save All</strong> (Ctrl+Shift+S), then <strong>close and reopen Unreal</strong>. This is the only
+  restart you need. After it, the Output Log (Window → Output Log) shows
+  <code>Game feature 'RaviCars' … Ending state: Active</code>.</li>
+</ol>
+<div class="note"><p><strong>Everything goes inside your pack's folder.</strong> Models, materials, textures and
+Blueprints all live under <code>RaviCars</code>. Anything your pack uses from outside it (other than the game parts
+the kit provides) makes the build fail.</p></div>
+
+<h3 id="model">6. Get a car model</h3>
+<p>We'll use Unreal's free sports car. It's Epic's content, which you're allowed to use in Unreal projects.</p>
+<ol class="steps">
+  <li>Content Browser → <strong>Add</strong> → <strong>Add Feature or Content Pack</strong> → the
+  <strong>Blueprint</strong> tab → <strong>Vehicle</strong> → <strong>Add to Project</strong>. It adds a
+  <code>Vehicles</code> folder (and some template folders) under <code>Content</code>.</li>
+  <li>Select the <code>Vehicles/SportsCar</code> folder and the <code>Vehicles/PhysicsMaterials</code> folder, drag
+  them onto <strong>RaviCars Content</strong>, and choose <strong>Move Here</strong>. <em>Move</em>, not copy:
+  moving fixes all the links between the files.</li>
+  <li>Delete the rest of the template content the pack added (the other <code>Vehicles</code> leftovers, the
+  template maps and characters): select them → right-click → <strong>Delete</strong>.</li>
+  <li>Open <code>SM_SportsCar</code> (the body): in <em>Details</em> → <em>Nanite Settings</em>, <strong>untick
+  Enable Nanite Support</strong>; in <em>LOD Settings</em>, set <strong>Number of LODs</strong> to
+  <strong>3</strong> and click <strong>Apply Changes</strong>. Save.</li>
+  <li>Do the same for <code>SM_SportsCar_Wheel</code>, and for <code>SM_SportsCar_Glass</code> if it has Nanite
+  on. Phones don't support Nanite, and LODs make the car cheap to draw far away.</li>
+</ol>
+<p>The body material refers to two textures Epic doesn't include; Unreal warns about them. Ignore the warnings,
+or open <code>MI_SportsCarBody</code> and clear those texture slots.</p>
+
+<h3 id="drivable">7. Make the car drivable</h3>
+<p>Every car in the game is built on <strong>BP_VehiclePawnBase</strong>. It already handles driving, fuel,
+cameras, sounds and multiplayer; you only say what your car looks like and how it drives.</p>
+<ol class="steps">
+  <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Blueprint Class</strong> → expand <em>All
+  Classes</em> → search <strong>BP_VehiclePawnBase</strong> → Select → name it <code>BP_RaviSportsCar</code>.
+  Double-click to open it.</li>
+  <li><strong>The skeleton.</strong> In <em>Components</em> (top left), select <strong>VehicleMesh</strong>. In
+  <em>Details</em>, set <strong>Skeletal Mesh Asset</strong> to <code>SKM_SportsCar</code> and <strong>Anim
+  Class</strong> to <code>ABP_SportsCar</code>. This mesh is only the car's skeleton (the wheel bones), so the
+  viewport still looks empty.</li>
+  <li><strong>The body.</strong> With VehicleMesh selected, click <strong>Add</strong> → <strong>Static
+  Mesh</strong>, name it <code>Body</code>, and set its <strong>Static Mesh</strong> to <code>SM_SportsCar</code>.
+  Add another Static Mesh, <code>Glass</code>, with <code>SM_SportsCar_Glass</code>.</li>
+  <li><strong>The wheels.</strong> Add four more Static Mesh components with <code>SM_SportsCar_Wheel</code>. For
+  each, make sure it sits under <strong>VehicleMesh</strong> (drag it onto VehicleMesh if not), then in
+  <em>Details</em> → <em>Sockets</em> set <strong>Parent Socket</strong> to its wheel bone:
+    <div class="scroll"><table>
+      <thead><tr><th>Component</th><th>Parent Socket</th><th>Rotation</th></tr></thead>
+      <tbody>
+        <tr><td><code>WheelFL</code></td><td><code>Phys_Wheel_FL</code></td><td>0, 0, 0</td></tr>
+        <tr><td><code>WheelFR</code></td><td><code>Phys_Wheel_FR</code></td><td>0, 0, 180</td></tr>
+        <tr><td><code>WheelBL</code></td><td><code>Phys_Wheel_BL</code></td><td>0, 0, 0</td></tr>
+        <tr><td><code>WheelBR</code></td><td><code>Phys_Wheel_BR</code></td><td>0, 0, 180</td></tr>
+      </tbody>
+    </table></div>
+    Set each wheel's <em>Location</em> to 0, 0, 0. The right-hand wheels are turned 180° so their rims face out;
+    if a rim faces inward in the viewport, turn that wheel around.</li>
+  <li><strong>The physics wheels.</strong> Select <strong>VehicleMovementComp</strong>. In <em>Vehicle Setup</em>
+  → <strong>Wheel Setups</strong>, make four entries:
+    <div class="scroll"><table>
+      <thead><tr><th>#</th><th>Wheel Class</th><th>Bone Name</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>BPD_BaseWheel_Front</code></td><td><code>Phys_Wheel_FL</code></td></tr>
+        <tr><td>1</td><td><code>BPD_BaseWheel_Front</code></td><td><code>Phys_Wheel_FR</code></td></tr>
+        <tr><td>2</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>Phys_Wheel_BL</code></td></tr>
+        <tr><td>3</td><td><code>BPD_BaseWheel_Rear</code></td><td><code>Phys_Wheel_BR</code></td></tr>
+      </tbody>
+    </table></div>
+    These are what touch the road. The bone names must match the skeleton exactly.</li>
+  <li><strong>Make it yours</strong> in VehicleMovementComp:
+    <ul>
+      <li><strong>Mass</strong> (kg): a small car 1,100–1,400, an SUV 2,000.</li>
+      <li><strong>Engine Setup</strong> → <strong>Max Torque</strong> (N·m) and <strong>Max RPM</strong>: more
+      torque pulls harder; a small petrol car is around 200–300 N·m at 6,000 RPM.</li>
+      <li><strong>Engine Setup</strong> → <strong>Torque Curve</strong>: if you edit it, keep every key
+      <strong>linear</strong> (right-click a key → Linear). A curved key with a steep handle can swing below zero
+      between keys, and the car then drives <em>backwards</em> when you accelerate.</li>
+      <li><strong>Transmission Setup</strong>: gear ratios and when it shifts.</li>
+      <li><strong>Differential Setup</strong>: front-, rear- or all-wheel drive.</li>
+    </ul></li>
+  <li><strong>Compile</strong> and <strong>Save</strong> (top left).</li>
+</ol>
+<div class="note"><p><strong>Don't add any nodes</strong> to the Event Graph, functions or Construction Script.
+Components and changed values are fine; logic isn't allowed in packs, because phones can't load code from a pack.
+The kit rejects Blueprints with logic.</p></div>
+
+<h3 id="garage">8. Put it in the garage</h3>
+<p>The garage finds cars through a small card called a <strong>vehicle definition</strong>.</p>
+<ol class="steps">
+  <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Miscellaneous</strong> → <strong>Data
+  Asset</strong> → <strong>EvaVehicleDefinition</strong> → name it <code>DA_Vehicle_RaviSportsCar</code>. Open
+  it.</li>
+  <li>Fill in:
+    <div class="scroll"><table>
+      <thead><tr><th>Field</th><th>Example</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Vehicle Id</td><td><code>ravicars.sportscar</code></td><td>Pack name, a dot, the car; all lowercase, no spaces. <strong>Never change it</strong> once people use your pack: saves refer to it.</td></tr>
+        <tr><td>Display Name</td><td>Ravi Sports Car</td><td>Shown to players.</td></tr>
+        <tr><td>Description</td><td>A light, quick coupé.</td><td>Optional.</td></tr>
+        <tr><td>Author</td><td>Ravi</td><td>Credit for the car. (The Mods list shows the pack author you gave in step 4.)</td></tr>
+        <tr><td>Pawn Class</td><td><code>BP_RaviSportsCar</code></td><td>Your Blueprint from step 7.</td></tr>
+        <tr><td>Sort Order</td><td><code>100</code></td><td>100 or more, so the game's own cars come first.</td></tr>
+      </tbody>
+    </table></div></li>
+  <li>Save.</li>
+</ol>
+
+<h3 id="traffic">9. Add it to traffic</h3>
+<p>Traffic cars are driven by the game, so they only need a model. You can add the same car, or a different
+one.</p>
+<ol class="steps">
+  <li>In <code>RaviCars/Vehicles</code>: right-click → <strong>Miscellaneous</strong> → <strong>Data
+  Asset</strong> → <strong>EvaTrafficVehicleDefinition</strong> → name it <code>DA_Traffic_RaviSportsCar</code>.</li>
+  <li>Fill in:
+    <div class="scroll"><table>
+      <thead><tr><th>Field</th><th>Example</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Traffic Id</td><td><code>ravicars.sportscar</code></td><td>Same rules as the Vehicle Id.</td></tr>
+        <tr><td>Display Name</td><td>Ravi Sports Car</td><td></td></tr>
+        <tr><td>Static Mesh</td><td><code>SM_SportsCar</code></td><td>The whole car as one mesh. Its wheels don't turn, which is hard to notice in traffic. (Or set <em>Mesh</em> to a skeletal mesh whose wheel bones are named with <em>wheel</em>, <em>tyre</em> or <em>tire</em>, and they will.)</td></tr>
+        <tr><td>Weight</td><td><code>0.4</code></td><td>How common it is. The game's own traffic cars are 1 each, so 0.2–0.5 mixes yours in.</td></tr>
+        <tr><td>Min / Max Speed Factor</td><td><code>0.9</code> / <code>1.1</code></td><td>Cruising speed as a share of the speed limit.</td></tr>
+        <tr><td>Mesh Yaw Offset</td><td><code>0</code></td><td>Set to <code>180</code> if the car drives backwards.</td></tr>
+      </tbody>
+    </table></div></li>
+  <li>Save.</li>
+</ol>
+
+<h3 id="test">10. Test it in Unreal</h3>
+<ol class="steps">
+  <li><strong>File</strong> → <strong>New Level</strong> → <strong>Basic</strong>. You get a floor to drive on.</li>
+  <li>Drag <code>BP_RaviSportsCar</code> from the Content Browser into the level, just above the floor.</li>
+  <li>With it selected, in <em>Details</em> search <em>Auto Possess</em> and set <strong>Auto Possess
+  Player</strong> to <strong>Player 0</strong>.</li>
+  <li>Press <strong>Play</strong> (Alt+P). Check that the car sits on its wheels, doesn't sink or bounce, and drives
+  forward. The game's touch controls only appear on the phone; here you're checking looks and physics. Press
+  Esc to stop.</li>
+  <li>Don't save this test level into your pack. Close it without saving, or save it outside the pack folder.</li>
+</ol>
+
+<h3 id="build">11. Check, build and install</h3>
+<ol class="steps">
+  <li><strong>Check.</strong> In the Content Browser, right-click your pack folder → <strong>Validate
+  Assets</strong>. Fix every <strong>error</strong>: usually something your pack uses that lives outside it
+  (move it into the pack) or a Blueprint with logic. <strong>Warnings</strong> are advice: Nanite still on, a
+  texture over 2048&nbsp;px, a mesh over 30,000 vertices or without LODs.</li>
+  <li><strong>Save All</strong> and <strong>close Unreal</strong>.</li>
+  <li><strong>Build.</strong> In PowerShell in the kit folder (as in step 4):
+    <pre><code>powershell -ExecutionPolicy Bypass -File Tools/Mods/Build-VehiclePack.ps1 -Pack RaviCars</code></pre>
+    It takes a few minutes. Hundreds of yellow <code>Could not resolve package /Game/…</code> warnings are
+    normal: they're game files the kit doesn't include. Only red errors matter. The finished pack is in
+    <code>Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars/</code>: a <code>RaviCars.uplugin</code> file and
+    <code>Content/Paks/Android/</code> with three files.</li>
+  <li><strong>Copy it to your phone.</strong> Connect the phone by USB and choose <strong>File transfer</strong> on
+  the phone. In File Explorer, open the phone and go to
+    <pre><code>Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></pre>
+    (create <code>Plugins</code> and <code>GameFeatures</code> if they're missing, and open the game once first so
+    the <code>com.evastudios…</code> folder exists). Copy the whole <code>RaviCars</code> folder there.</li>
+  <li><strong>Or let the build copy it:</strong> turn on <em>USB debugging</em> on the phone (Settings → About
+  phone → Software information → tap <em>Build number</em> 7 times; then Settings → Developer options → USB
+  debugging), install <em>Android SDK Platform Tools</em> so <code>adb</code> works, and add <code>-Push</code> to the
+  build command. Use this if Windows can't show the <code>Android/data</code> folder on your phone.</li>
+  <li><strong>Close the game completely</strong> (swipe it away from recent apps) and open it again.</li>
+  <li>On the main menu tap <strong>Mods</strong>. Your pack should say <strong>Loaded</strong> and list
+  <em>Vehicles: Ravi Sports Car</em> and <em>Traffic: Ravi Sports Car</em>. If it says <em>Could not load</em>,
+  the reason is underneath; see <a href="#trouble">Troubleshooting</a>.</li>
+  <li>Go to the garage: your car comes after the game's own. Drive it, and watch for it in traffic.</li>
+</ol>
+<p>To update your pack, change it in Unreal, build again, and copy the new folder over the old one. To share it,
+zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players install it as described in
+<a href="#install">Install a vehicle pack</a>.</p>
+
+<h3 id="own-model">12. Using your own model</h3>
+<p>Your model must be yours to share (made by you, or with a licence that allows it). Then:</p>
 <ul>
-  <li>Keep cars light: drivable cars under <strong>30,000 vertices</strong>, traffic cars under
-  <strong>10,000</strong>, with LODs, textures at most <strong>2048&nbsp;px</strong>, and
-  <strong>Nanite off</strong>. Phones don't support Nanite.</li>
-  <li>Engine torque curve: keep its keys <strong>linear</strong>. A curved key with a steep tangent can dip below
-  zero between keys, and the car then drives backwards when pulling away.</li>
-  <li>Traffic car driving backwards? Set its <em>Mesh Yaw Offset</em> to <code>180</code>.</li>
-  <li>Car floating, sinking or flipping? The wheel bone names don't match the skeleton, the wheel radius is
-  wrong, or the model's pivot isn't at ground level.</li>
+  <li><strong>For a drivable car</strong>: a <strong>skeletal mesh</strong> with a root bone for the body and
+  <strong>one bone per wheel</strong> at the wheel's centre, each wheel skinned 100% to its bone.</li>
+  <li>Facing <strong>+X</strong> (forward), Z up, in centimetres, pivot at <strong>ground level</strong> under the
+  middle of the car.</li>
+  <li>Phone-friendly: under <strong>30,000 vertices</strong> for drivable cars and <strong>10,000</strong> for traffic,
+  with <strong>LODs</strong>, textures <strong>2048&nbsp;px</strong> or smaller, Nanite off.</li>
 </ul>
+<ol class="steps">
+  <li>Import the FBX into <code>RaviCars/Meshes</code> (drag the file into the Content Browser). Tick
+  <strong>Skeletal Mesh</strong> and <strong>Create Physics Asset</strong>.</li>
+  <li>Make a wheel animation Blueprint: right-click your mesh's <strong>Skeleton</strong> → <strong>Create</strong>
+  → <strong>Anim Blueprint</strong>, parent class <strong>VehicleAnimationInstance</strong>. Open it; in the
+  <em>AnimGraph</em> connect <strong>Mesh Space Ref Pose</strong> → <strong>Wheel Handler</strong> →
+  <strong>Component To Local</strong> → <strong>Output Pose</strong>. Compile and save.</li>
+  <li>Follow step 7, but set VehicleMesh's <em>Skeletal Mesh Asset</em> to your mesh and <em>Anim Class</em> to your
+  animation Blueprint. If the wheels are part of your skeletal mesh, you don't need the Static Mesh
+  components.</li>
+  <li>Use your own wheel bone names in <em>Wheel Setups</em>.</li>
+  <li>If your wheels are bigger or smaller than a small car's, make your own wheel classes: right-click →
+  <strong>Blueprint Class</strong> → All Classes → <strong>BPD_BaseWheel</strong> → one for the front and one for
+  the rear; set <strong>Wheel Radius</strong>, <strong>Wheel Width</strong> and (front)
+  <strong>Max Steer Angle</strong>. Use them in <em>Wheel Setups</em>.</li>
+</ol>
+
+<h3 id="trouble">13. Troubleshooting</h3>
+<div class="scroll"><table>
+  <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>Unreal says the kit's modules are missing or built for another engine</td><td>Install exactly Unreal Engine 5.8.</td></tr>
+    <tr><td>The pack isn't active in Unreal / its cars don't show</td><td>Restart Unreal after creating the GameFeatureData (step 5). Check its name matches the pack exactly.</td></tr>
+    <tr><td>Build error: <code>Uncooked … content … is being referenced by DLC!</code></td><td>Your pack uses something outside the pack. <em>Validate Assets</em> lists it; move it into the pack.</td></tr>
+    <tr><td>Hundreds of <code>Could not resolve package</code> warnings, or warnings about missing <code>/Game/Sounds</code></td><td>Normal. Only errors matter.</td></tr>
+    <tr><td>Mods says <em>Could not load</em></td><td>Read the reason under it. Usually the pack was built with a kit for another game version, or copied to the wrong folder (the <code>.uplugin</code> must be directly inside <code>GameFeatures/RaviCars/</code>).</td></tr>
+    <tr><td>Car not in the garage</td><td>The definition isn't in <code>/RaviCars/Vehicles</code>, <em>Pawn Class</em> is empty, or the GameFeatureData is missing the <code>EvaVehicle</code> entry.</td></tr>
+    <tr><td>Car floats, sinks or flips</td><td>Wheel <em>Bone Names</em> don't match the skeleton, wrong wheel radius, or the model's pivot isn't at ground level.</td></tr>
+    <tr><td>Wheels don't turn</td><td><em>Anim Class</em> isn't set on VehicleMesh, or the animation Blueprint lacks the <em>Wheel Handler</em> node.</td></tr>
+    <tr><td>Wheel meshes float away from the car</td><td>The wheel component isn't under VehicleMesh, <em>Parent Socket</em> is wrong, or its Location isn't 0, 0, 0.</td></tr>
+    <tr><td>Car drives backwards when accelerating</td><td>The Torque Curve dips below zero: make its keys linear (step 7).</td></tr>
+    <tr><td>Traffic car drives backwards</td><td>Set <em>Mesh Yaw Offset</em> to 180.</td></tr>
+    <tr><td>Can't see <code>Android/data</code> on the phone from Windows</td><td>Use USB debugging and <code>-Push</code> (step 11).</td></tr>
+  </tbody>
+</table></div>
 
 <h2 id="mod-kit">Get the Mod Kit</h2>
 <div class="soon">

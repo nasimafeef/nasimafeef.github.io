@@ -316,6 +316,7 @@ using your own model. It takes about an hour the first time, most of it waiting 
     <li><a href="#test">Test it in Unreal</a></li>
     <li><a href="#build">Check, build and install</a></li>
     <li><a href="#own-model">Using your own model</a></li>
+    <li><a href="#anim-bp">Wheel animation Blueprint</a></li>
     <li><a href="#trouble">Troubleshooting</a></li>
   </ol>
 </nav>
@@ -559,6 +560,21 @@ traffic doesn't use the car's physics setup, so the model's orientation is all t
   phone → Software information → tap <em>Build number</em> 7 times; then Settings → Developer options → USB
   debugging), install <em>Android SDK Platform Tools</em> so <code>adb</code> works, and add <code>-Push</code> to the
   build command. Use this if Windows can't show the <code>Android/data</code> folder on your phone.</li>
+  <li><strong>Or copy it with adb yourself</strong> (USB debugging on, run in PowerShell or cmd in the kit folder; from
+  Git Bash, put <code>MSYS_NO_PATHCONV=1</code> in front of each line):
+    <div class="scroll"><table>
+      <thead><tr><th>To</th><th>Run</th></tr></thead>
+      <tbody>
+        <tr><td>Create the packs folder (first time only)</td><td><code>adb shell mkdir -p /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures</code></td></tr>
+        <tr><td>Copy or update the pack</td><td><code>adb push Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></td></tr>
+        <tr><td>List installed packs</td><td><code>adb shell ls /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures</code></td></tr>
+        <tr><td>Remove a pack</td><td><code>adb shell rm -r /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/RaviCars</code></td></tr>
+        <tr><td>Restart the game</td><td><code>adb shell am force-stop com.evastudios.vehiclesimulator</code></td></tr>
+      </tbody>
+    </table></div>
+    If <code>adb</code> isn't found, use its full path:
+    <code>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe</code>. After renaming or deleting assets in the pack,
+    remove the old folder before pushing the new one, so no stale files are left.</li>
   <li><strong>Close the game completely</strong> (swipe it away from recent apps) and open it again.</li>
   <li>On the main menu tap <strong>Mods</strong>. Your pack should say <strong>Loaded</strong> and list
   <em>Vehicles: Ravi Sports Car</em> and <em>Traffic: Ravi Sports Car</em>. If it says <em>Could not load</em>,
@@ -576,16 +592,23 @@ zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players in
   <strong>one bone per wheel</strong> at the wheel's centre, each wheel skinned 100% to its bone.</li>
   <li>Facing <strong>+X</strong> (forward), Z up, in centimetres, pivot at <strong>ground level</strong> under the
   middle of the car.</li>
+  <li><strong>The root bone must have zero rotation.</strong> The car's physics takes "forward" from the root
+  bone, not from how the mesh looks. After importing, select the root bone in the Skeleton Tree: its
+  <em>Rotation</em> must read <strong>0, 0, 0</strong>. If it says -90 or 90 (typical for Blender rigs), the car will
+  spin in place when you accelerate. In Blender, re-export with <em>Armature → Primary Bone Axis: X</em> and
+  <em>Secondary Bone Axis: -Y</em> (or <em>Y</em>), or rotate the root bone so it lies across the car with roll 0.</li>
   <li>Phone-friendly: under <strong>30,000 vertices</strong> for drivable cars and <strong>10,000</strong> for traffic,
   with <strong>LODs</strong>, textures <strong>2048&nbsp;px</strong> or smaller, Nanite off.</li>
 </ul>
 <ol class="steps">
   <li>Import the FBX into <code>RaviCars/Meshes</code> (drag the file into the Content Browser). Tick
   <strong>Skeletal Mesh</strong> and <strong>Create Physics Asset</strong>.</li>
-  <li>Make a wheel animation Blueprint: right-click your mesh's <strong>Skeleton</strong> → <strong>Create</strong>
-  → <strong>Anim Blueprint</strong>, parent class <strong>VehicleAnimationInstance</strong>. Open it; in the
-  <em>AnimGraph</em> connect <strong>Mesh Space Ref Pose</strong> → <strong>Wheel Handler</strong> →
-  <strong>Component To Local</strong> → <strong>Output Pose</strong>. Compile and save.</li>
+  <li><strong>Clean up the physics asset.</strong> Open the new <code>…_PhysicsAsset</code>. Unreal gave every bone a
+  collision body, including the wheels. Select the bodies on the <strong>four wheel bones</strong> and press
+  <strong>Delete</strong>; keep only the one on the <strong>root (body) bone</strong>. The real wheels are the
+  invisible ones from <em>Wheel Setups</em>; extra wheel bodies drag on the road and make the car spin or
+  wobble. Save.</li>
+  <li>Make the <a href="#anim-bp">wheel animation Blueprint</a> (step 13).</li>
   <li>Follow step 7, but set VehicleMesh's <em>Skeletal Mesh Asset</em> to your mesh and <em>Anim Class</em> to your
   animation Blueprint. If the wheels are part of your skeletal mesh, you don't need the Static Mesh
   components.</li>
@@ -596,7 +619,61 @@ zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players in
   <strong>Max Steer Angle</strong>. Use them in <em>Wheel Setups</em>.</li>
 </ol>
 
-<h3 id="trouble">13. Troubleshooting</h3>
+<h3 id="anim-bp">13. Wheel animation Blueprint (and a turning steering wheel)</h3>
+<p>The animation Blueprint makes the wheel meshes spin and steer with the physics wheels, and can turn a
+steering wheel inside the car. It's the one kind of Blueprint in a pack that may contain nodes. (The template
+sports car already has one, <code>ABP_SportsCar</code>.)</p>
+
+<p><strong>Create it</strong></p>
+<ol class="steps">
+  <li>In the Content Browser, find your mesh's <strong>Skeleton</strong> (<code>…_Skeleton</code>), right-click it →
+  <strong>Create</strong> → <strong>Anim Blueprint</strong>.</li>
+  <li>In the dialog, pick the parent class <strong>VehicleAnimationInstance</strong> (search "Vehicle"). Name it
+  <code>ABP_&lt;Car&gt;</code> and save it in your pack.</li>
+</ol>
+
+<p><strong>Wire the AnimGraph</strong> (open the Blueprint → the <em>AnimGraph</em> tab; it already has an
+<em>Output Pose</em> node)</p>
+<ol class="steps">
+  <li>Right-click an empty spot → search <strong>Mesh Space Ref Pose</strong> → add it. It outputs the car's rest
+  pose.</li>
+  <li>Right-click → search <strong>Wheel Controller</strong> (the Chaos vehicle node, "Wheel Controller for
+  WheeledVehicle") → add it. Drag from Mesh Space Ref Pose's pose pin into the Wheel Controller's
+  <em>Component Pose</em> input. It spins and steers every bone named in your car's <em>Wheel Setups</em>.</li>
+  <li>Drag from the Wheel Controller's output pin into <strong>Output Pose</strong>. Unreal inserts a
+  <strong>Component To Local</strong> node between them automatically; if it doesn't, add one yourself
+  (search "Component To Local") and connect Wheel Controller → Component To Local → Output Pose.</li>
+  <li><strong>Compile</strong> and <strong>Save</strong>. The chain is:
+    <pre><code>Mesh Space Ref Pose → Wheel Controller → Component To Local → Output Pose</code></pre></li>
+  <li>In your vehicle Blueprint, select <strong>VehicleMesh</strong> and set <strong>Anim Class</strong> to this
+  Blueprint. Compile and save.</li>
+</ol>
+
+<p><strong>Optional: a steering wheel that turns</strong> (this is how the game's Thor does it). Your model needs a
+separate <strong>bone for the steering wheel</strong>, with the steering-wheel geometry skinned to it.</p>
+<ol class="steps">
+  <li>In the animation Blueprint, in <em>My Blueprint</em> → <em>Variables</em>, click <strong>+</strong> and add a
+  <strong>Float</strong> variable called <code>SteeringValue</code>.</li>
+  <li>Open the <strong>Event Graph</strong>. From <strong>Event Blueprint Update Animation</strong> (already there),
+  build this chain:
+    <pre><code>Try Get Pawn Owner → Cast To BP_VehiclePawnBase → Get Steering Value
+→ Multiply (× how far the wheel turns at full lock, e.g. 90) → Set SteeringValue</code></pre>
+    Connect the event's execution pin to the <em>Cast</em>, and the Cast's execution pin to <em>Set
+    SteeringValue</em>. <em>Get Steering Value</em> is a function on the base car: it returns the current steering
+    from -1 (full left) to 1 (full right).</li>
+  <li>Back in the <strong>AnimGraph</strong>, add <strong>Transform (Modify) Bone</strong> between the Wheel
+  Controller and Component To Local:
+    <pre><code>Mesh Space Ref Pose → Wheel Controller → Transform (Modify) Bone → Component To Local → Output Pose</code></pre></li>
+  <li>Select the Transform (Modify) Bone node. In <em>Details</em>: <strong>Bone to Modify</strong> = your steering
+  wheel bone; <strong>Rotation Mode</strong> = <em>Add to Existing</em>; <strong>Rotation Space</strong> =
+  <em>Bone Space</em>; leave Translation and Scale on <em>Ignore</em>.</li>
+  <li>Drag <code>SteeringValue</code> into the graph (<em>Get</em>), add a <strong>Make Rotator</strong>, connect
+  SteeringValue to its <strong>Roll</strong>, and connect Make Rotator to the node's <strong>Rotation</strong> pin.</li>
+  <li>Compile, save and test. If the steering wheel turns around the wrong axis, move SteeringValue to
+  <strong>Pitch</strong> or <strong>Yaw</strong> instead (it depends on how the bone is oriented). If it turns the
+  wrong way, use a negative number in the Multiply (e.g. -90).</li>
+</ol>
+<h3 id="trouble">14. Troubleshooting</h3>
 <div class="scroll"><table>
   <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
   <tbody>
@@ -610,6 +687,7 @@ zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players in
     <tr><td>Wheels don't turn</td><td><em>Anim Class</em> isn't set on VehicleMesh, or the animation Blueprint lacks the <em>Wheel Handler</em> node.</td></tr>
     <tr><td>Wheel meshes float away from the car</td><td>The wheel component isn't under VehicleMesh, <em>Parent Socket</em> is wrong, or its Location isn't 0, 0, 0.</td></tr>
     <tr><td>Car drives backwards when accelerating</td><td>The Torque Curve dips below zero: make its keys linear (step 7).</td></tr>
+    <tr><td>Car spins in place when accelerating (one way forward, the other in reverse)</td><td>The root bone is rotated (it must read 0, 0, 0), or the physics asset still has bodies on the wheel bones. See <a href="#own-model">step 12</a>.</td></tr>
     <tr><td>Traffic car drives backwards</td><td>Set <em>Mesh Yaw Offset</em> to 180.</td></tr>
     <tr><td>Can't see <code>Android/data</code> on the phone from Windows</td><td>Use USB debugging and <code>-Push</code> (step 11).</td></tr>
   </tbody>

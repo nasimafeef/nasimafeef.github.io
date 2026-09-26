@@ -280,18 +280,19 @@
 </div>
 
 <h2 id="install">Install a vehicle pack</h2>
+<p>Needs game version <strong>1.0.2</strong> or later.</p>
 <ol class="steps">
-  <li>Get the pack's folder (for example <code>RaviCars</code>) from its author. It contains a
-  <code>.uplugin</code> file and a <code>Content</code> folder.</li>
-  <li>Connect your phone to a computer, or use a file manager app, and copy the <strong>whole folder</strong> to:
-    <pre><code>Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></pre>
-    Create the <code>Plugins/GameFeatures</code> folders if they don't exist yet.</li>
-  <li><strong>Restart the game.</strong></li>
-  <li>On the main menu tap <strong>Mods</strong>. The pack should say <strong>Loaded</strong> and list its cars.
-  If it says <em>Could not load</em>, the reason is shown underneath.</li>
+  <li>Get the pack's <strong>.zip</strong> file (for example <code>RaviCars.zip</code>) onto your phone: download it,
+  receive it in a chat app, or connect the phone to a computer (USB, <strong>File transfer</strong>) and copy it into
+  the phone's <strong>Download</strong> folder.</li>
+  <li>Open the game, tap <strong>Mods</strong>, then <strong>Install pack</strong>, and choose the .zip file. The game
+  says <em>Installed RaviCars</em>.</li>
+  <li><strong>Restart the game</strong> (swipe it away and open it again).</li>
+  <li>Tap <strong>Mods</strong>: the pack says <strong>Loaded</strong> and lists its cars. If it says <em>Could not
+  load</em>, the reason is shown underneath.</li>
 </ol>
-<p>To remove a pack, delete its folder and restart the game.</p>
-<div class="note">
+<p>To update a pack, install the new .zip the same way. To remove one, tap <strong>Remove</strong> on it in
+<strong>Mods</strong> (twice to confirm) and restart the game.</p><div class="note">
   <p><strong>Packs are made for one version of the game.</strong> After a game update, a pack only loads once
   its author rebuilds it for the new version. In multiplayer, everyone needs the same packs: the host refuses
   cars it doesn't have.</p>
@@ -566,42 +567,36 @@ traffic doesn't use the car's physics setup, so the model's orientation is all t
   <li><strong>Build.</strong> In PowerShell in the kit folder (as in step 4):
     <pre><code>powershell -ExecutionPolicy Bypass -File Tools/Mods/Build-VehiclePack.ps1 -Pack RaviCars</code></pre>
     It takes a few minutes. Hundreds of yellow <code>Could not resolve package /Game/…</code> warnings are
-    normal: they're game files the kit doesn't include. Only red errors matter. The finished pack is in
-    <code>Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars/</code>: a <code>RaviCars.uplugin</code> file and
-    <code>Content/Paks/Android/</code> with three files.</li>
-  <li><strong>Copy it to your phone.</strong> Connect the phone by USB and choose <strong>File transfer</strong> on
-  the phone. In File Explorer, open the phone and go to
-    <pre><code>Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></pre>
-    (create <code>Plugins</code> and <code>GameFeatures</code> if they're missing, and open the game once first so
-    the <code>com.evastudios…</code> folder exists). Copy the whole <code>RaviCars</code> folder there.</li>
+    normal: they're game files the kit doesn't include. Only red errors matter. The finished pack is
+    <code>Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars.zip</code>: the file you install and share.</li>
+  <li><strong>Get the zip onto your phone.</strong> Connect the phone by USB, choose <strong>File transfer</strong> on the
+  phone, and copy <code>RaviCars.zip</code> into the phone's <strong>Download</strong> folder in File Explorer.</li>
   <li><strong>Or let the build copy it:</strong> turn on <em>USB debugging</em> on the phone (Settings → About
   phone → Software information → tap <em>Build number</em> 7 times; then Settings → Developer options → USB
   debugging), install <em>Android SDK Platform Tools</em> so <code>adb</code> works, and add <code>-Push</code> to the
-  build command. Use this if Windows can't show the <code>Android/data</code> folder on your phone.</li>
-  <li><strong>Or copy it with adb yourself</strong> (USB debugging on, run in PowerShell or cmd in the kit folder; from
-  Git Bash, put <code>MSYS_NO_PATHCONV=1</code> in front of each line):
+  build command. It copies the zip to the phone's Download folder.</li>
+  <li><strong>Install it:</strong> in the game, <strong>Mods</strong> → <strong>Install pack</strong> → choose
+  <code>RaviCars.zip</code>. Don't copy the pack folder into <code>Android/data</code> yourself: Android only lets the
+  game read files there that it created, so a copied pack isn't loaded.</li>
+  <li><strong>Useful adb commands</strong> (USB debugging on, run in PowerShell or cmd; from Git Bash, put
+  <code>MSYS_NO_PATHCONV=1</code> in front of each line):
     <div class="scroll"><table>
       <thead><tr><th>To</th><th>Run</th></tr></thead>
       <tbody>
-        <tr><td>Create the packs folder (first time only)</td><td><code>adb shell mkdir -p /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures</code></td></tr>
-        <tr><td>Copy or update the pack</td><td><code>adb push Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/</code></td></tr>
-        <tr><td>List installed packs</td><td><code>adb shell ls /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures</code></td></tr>
-        <tr><td>Remove a pack</td><td><code>adb shell rm -r /sdcard/Android/data/com.evastudios.vehiclesimulator/files/UnrealGame/VehicleSimulator/VehicleSimulator/Plugins/GameFeatures/RaviCars</code></td></tr>
+        <tr><td>Copy the zip to the phone's Download folder</td><td><code>adb push Plugins/GameFeatures/RaviCars/Saved/Package/RaviCars.zip /sdcard/Download/</code></td></tr>
+        <tr><td>See what the pack loader did</td><td><code>adb logcat -s EvaMods</code></td></tr>
         <tr><td>Restart the game</td><td><code>adb shell am force-stop com.evastudios.vehiclesimulator</code></td></tr>
       </tbody>
     </table></div>
     If <code>adb</code> isn't found, use its full path:
-    <code>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe</code>. After renaming or deleting assets in the pack,
-    remove the old folder before pushing the new one, so no stale files are left.</li>
-  <li><strong>Close the game completely</strong> (swipe it away from recent apps) and open it again.</li>
+    <code>%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe</code>.</li>  <li><strong>Close the game completely</strong> (swipe it away from recent apps) and open it again.</li>
   <li>On the main menu tap <strong>Mods</strong>. Your pack should say <strong>Loaded</strong> and list
   <em>Vehicles: Ravi Car</em> and <em>Traffic: Ravi Car</em>. If it says <em>Could not load</em>,
   the reason is underneath; see <a href="#trouble">Troubleshooting</a>.</li>
   <li>Go to the garage: your car comes after the game's own. Drive it, and watch for it in traffic.</li>
 </ol>
-<p>To update your pack, change it in Unreal, build again, and copy the new folder over the old one. To share it,
-zip the <code>RaviCars</code> folder from <code>Saved/Package</code>; players install it as described in
-<a href="#install">Install a vehicle pack</a>.</p>
+<p>To update your pack, change it in Unreal, build again, and install the new zip. To share it, send
+<code>RaviCars.zip</code>; players install it as described in <a href="#install">Install a vehicle pack</a>.</p>
 
 <h3 id="anim-bp">12. Animation: steering wheel, buttons and custom animations</h3>
 <p>You don't need to make an animation Blueprint. Every car made from <code>BP_VehiclePawnBase</code> uses the
@@ -686,7 +681,7 @@ Try the axis and sign (e.g. -70) until the part moves the right way; it depends 
     <tr><td>Build error: <code>Uncooked … content … is being referenced by DLC!</code></td><td>Your pack uses something outside the pack. <em>Validate Assets</em> lists it; move it into the pack.</td></tr>
     <tr><td>Build fails with <code>Could not find a part of the path …</code></td><td>The kit's folder path is too long for Windows (over 260 characters inside it). Move the whole <code>VehicleSimulator</code> folder to a short one such as <code>C:\Mods\VehicleSimulator</code> and build again.</td></tr>
     <tr><td>Hundreds of <code>Could not resolve package</code> warnings, or warnings about missing <code>/Game/Sounds</code></td><td>Normal. Only errors matter.</td></tr>
-    <tr><td>Mods says <em>Could not load</em></td><td>Read the reason under it. Usually the pack was built with a kit for another game version, or copied to the wrong folder (the <code>.uplugin</code> must be directly inside <code>GameFeatures/RaviCars/</code>).</td></tr>
+    <tr><td>Mods says <em>Could not load</em></td><td>Read the reason under it. Usually the pack was built with a kit for another game version: rebuild it with the kit for the version on your phone.</td></tr>
     <tr><td>Car not in the garage</td><td>The definition isn't in <code>/RaviCars/Vehicles</code>, <em>Pawn Class</em> is empty, or the GameFeatureData is missing the <code>EvaVehicle</code> entry.</td></tr>
     <tr><td>Car floats, sinks or flips</td><td>Wheel <em>Bone Names</em> don't match the skeleton, wrong wheel radius, or the model's pivot isn't at ground level.</td></tr>
     <tr><td>Wheels don't turn</td><td>VehicleMesh's <em>Anim Class</em> isn't <code>ABP_EvaVehicle</code> (or an animation Blueprint for your skeleton), or the <em>Bone Names</em> in Wheel Setups are wrong.</td></tr>
@@ -697,7 +692,7 @@ Try the axis and sign (e.g. -70) until the part moves the right way; it depends 
     <tr><td>Car drives backwards when accelerating</td><td>The Torque Curve dips below zero: make its keys linear (step 7).</td></tr>
     <tr><td>Car spins in place when accelerating (one way forward, the other in reverse)</td><td>The root bone is rotated (it must read 0, 0, 0), or the physics asset still has bodies on the wheel bones. See <a href="#model">step 6</a>.</td></tr>
     <tr><td>Traffic car drives backwards</td><td>Set <em>Mesh Yaw Offset</em> to 180.</td></tr>
-    <tr><td>Can't see <code>Android/data</code> on the phone from Windows</td><td>Use USB debugging and <code>-Push</code> (step 11).</td></tr>
+    <tr><td>The pack isn't listed in <em>Mods</em> at all</td><td>Install it with <em>Mods</em> → <em>Install pack</em> (a folder copied into <code>Android/data</code> isn't readable by the game), then restart. <code>adb logcat -s EvaMods</code> shows what the loader found.</td></tr>
   </tbody>
 </table></div>
 

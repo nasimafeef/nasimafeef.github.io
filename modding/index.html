@@ -356,7 +356,8 @@ version refuses to open the kit.</p></div>
 </ol>
 <p>The kit contains the parts of the game a car plugs into, the tools, and the full written guide
 (<code>README.md</code>). It contains <strong>no car models and no sounds</strong>: cars are silent while you work
-in Unreal, and use the game's engine, skid and crash sounds on your phone.</p>
+in Unreal, and use the game's engine, skid and crash sounds on your phone, or your own engine and skid sounds
+(<a href="#sounds">step 7</a>).</p>
 
 <h3 id="pack">4. Create your pack</h3>
 <ol class="steps">
@@ -486,6 +487,19 @@ cameras, sounds, the wheel animation and multiplayer; you only say what your car
   <em>Location</em> 0, 0, 0. Turn right-hand wheels 180° around Z if their rims face inward.</li>
   <li>Optional: steering wheel settings and up to four animation buttons (doors, wipers) are on the
   <strong>VehicleAnimation</strong> component; see <a href="#anim-bp">step 12</a>.</li>
+  <li id="sounds"><strong>Optional: your car's own sounds.</strong> Without this, your car uses the game's jeep
+  engine sound.
+    <ul>
+      <li>Make a folder <code>Sounds</code> in your pack and drag your <strong>WAV</strong> files into it.</li>
+      <li>Click <strong>Class Defaults</strong> (toolbar) and set: <strong>Idle Engine Sound</strong> (the engine
+      idling), <strong>RPMSound</strong> (the engine at a steady mid RPM, under load, no gear changes; the game
+      varies it with engine speed) and, if you like, <strong>Skid Sound</strong> (a tyre skid).</li>
+      <li>Use short <strong>seamless loops</strong> (2–10 seconds), mono, 44.1 or 48 kHz. Diesel recordings suit
+      buses and jeeps.</li>
+      <li>Only use sounds you're allowed to share: your own recordings, or sounds licensed for commercial use
+      (CC0, or CC-BY with credit). Non-commercial (NC) sounds aren't allowed, because the game shows ads.</li>
+      <li>The kit has no game sounds, so you may hear nothing in Unreal; check the sounds on your phone.</li>
+    </ul></li>
   <li><strong>Compile</strong> and <strong>Save</strong> (top left).</li>
 </ol>
 <div class="note"><p><strong>Don't add any nodes</strong> to the Event Graph, functions or Construction Script.
@@ -706,7 +720,7 @@ Try the axis and sign (e.g. -70) until the part moves the right way; it depends 
 <ul>
   <li>A cut-down copy of the game's Unreal project with what a vehicle needs to plug into the game, and no
   more. It contains no car models and no sounds: bring your own model; in the game your car uses the game's
-  engine and crash sounds.</li>
+  engine and crash sounds, or your own engine sounds (<a href="#sounds">step 7</a>).</li>
   <li>Scripts to create, check, build and install packs.</li>
   <li>The full modding guide, from importing a model to troubleshooting.</li>
 </ul>
